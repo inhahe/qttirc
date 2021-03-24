@@ -1,0 +1,7 @@
+pyyaml
+PyQt5
+Twisted
+zope
+pywin32
+qt5reactor
+
