@@ -93,6 +93,8 @@ import yaml
 import irc
 from twisted.internet import protocol
 from twisted.internet import reactor
+from twisted.python import log
+log.startLogging(sys.stdout)
 import os, time, re, itertools, traceback, copy, os
 
 invalidwindowsfilenamestems = set(("CON", "PRN", "AUX", "NUL", "COM1", "COM2", "COM3", "COM4", "COM5", "COM6", "COM7", "COM8", "COM9", "LPT1", "LPT2", "LPT3", "LPT4", "LPT5", "LPT6", "LPT7", "LPT8", "LPT9")) #case-insensitive
@@ -215,7 +217,7 @@ def docommand(windowtype, window, text): #todo: test from server, channel, and p
           addline(window, "* No server set for the current window and none specified.")
       else:
         network_config, isbynetwork = lookupnetworkconfig(params[1])
-      network = Network(None, network_config)  
+      network = Network(None, network_config)
       #window.network = network #commented out because it seems wrong.
       #window.network.serverwindow = serverwindow      
     else:
@@ -247,10 +249,7 @@ def docommand(windowtype, window, text): #todo: test from server, channel, and p
     password = network_config.password if network_config else None
     if password:
       password = password.encode("ascii").decode()
-    if network_config: realname = network_config.realname
-    realname = config.realname
-    if realname:
-      realname = realname.encode("ascii").decode()
+    realname = network_config.realname if network_config else config.realname or "qttirc"
     print(f"{network_config=}")
     network = Network(network_config=network_config)
     print(f"{dir(network_config)=}")
@@ -259,7 +258,6 @@ def docommand(windowtype, window, text): #todo: test from server, channel, and p
                                                                                                    #wish python had that.
                                                                                                    #https://devblogs.microsoft.com/typescript/announcing-typescript-3-7-beta/
                                                                                                    #todo: warn if nicks not specified in config file instead of erroring out
-    realname = network_config.realname if network_config and network_config.realname else config.realname
     server = ServerFactory(nickname=nick.encode("ascii").decode(), username=network_config.username.encode("ascii").decode() if network_config and network_config.username else None,
                            password=network_config.password.encode("ascii").decode() if network_config and network_config.password else None, realname=realname.encode("ascii").decode() if realname else None,
                            network=network, network_config=network_config)
@@ -384,7 +382,7 @@ class User:
     self.network = network
     self.ident = ident
     self.host = host
-    self.realname = realname
+    self.realname = realname or "qttirc"
     self.channels = channels
     self.message = messagewindow
 
@@ -516,6 +514,7 @@ class Network(object):
     self.name = None
     self.messagewindows = {} #should this be another class whose objects have messagewindow as an attribute? and if so, what would i call the class?
     self.serverwindow = serverwindow
+    self.nicks = [nick+suffix for suffix in ("", "_", "__", "___", "`", "``", "```") for nick in (getattr(network_config, "nicks", []) + (config.nicks or [])) or ["qttirc"]]
         
 def splithostmask(hostmask):
   if "!" in hostmask:
@@ -752,7 +751,7 @@ class ServerConnection(irc.IRCClient):
   def __init__(self):
     self.signedon = False
     self.nickindex = 0
-  
+    
   def signedOn(self):
     #print "signed on"
     addline(self.server.network.serverwindow, "* You are now signed on.")
@@ -836,27 +835,36 @@ class ServerConnection(irc.IRCClient):
       
   def irc_ERR_NICKNAMEINUSE(self, prefix, params):
     if not self.signedon: #should test if this is correct.
-      oldnick = self.server.network.network_config.nicks[self.nickindex]
-      self.nickindex = (self.nickindex+1) % len(self.server.network.network_config.nicks)
-      newnick = self.server.network.network_config.nicks[self.nickindex]
-      addline(self.server.network.serverwindow, '* Nick "%s" is taken. Changing nick to "%s"' % (oldnick, newnick))
+      #oldnick = self.server.network.network_config.nicks[self.nickindex]
+      oldnick = self.nickname
+      if self.server.network.network_config:
+        self.nickindex = self.nickindex+1
+        if self.nickindex < len(self.server.network.nicks):
+          newnick = self.server.network.nicks[self.nickindex]
+          self.nickindex += 1
+      addline(self.server.network.serverwindow, '* Nick "%s" is already in use. Changing nick to "%s"' % (oldnick, newnick))
       self.setNick(newnick)
       self.server.network.mynick = newnick
       #self.nickname = newnick #do i have to do this? (the answer is yes. not sure why. maybe the server doesn't send a changed nick command when you're not signed on yet so irc.py doesn't update nickname. or maybe something needs to be .decode()d.)
     else:
-      addline(self.server.network.serverwindow, ' * Nick "%s" already in use' % XXX)#todo: find out where %s is in the params
+      print(f"{params=}")
+      addline(self.server.network.serverwindow, ' * Nick "%s" is already in use' % params[2])#todo: find out where %s is in the params
       
   def irc_ERR_ERRONEUSNICKNAME(self, prefix, params):
     if not self.signedon: #should test if this is correct.
-      oldnick = self.server.network.network_config.nicks[self.nickindex]
-      self.nickindex = (self.nickindex+1) % len(self.server.network.network_config.nicks)
-      newnick = self.server.network.network_config.nicks[self.nickindex].encode("ascii").decode()
+      oldnick = self.nickname
+      if self.server.network.network_config:
+        self.nickindex = self.nickindex+1
+        if self.nickindex < len(self.server.network.nicks):
+          newnick = self.server.network.nicks[self.nickindex]
+          self.nickindex += 1
       print(f"{newnick=}")
       addline(self.server.network.serverwindow, '* Nick "%s" is erroneous. Changing nick to "%s"' % (oldnick, newnick)) #todo: use oldnick from params instead of config.
       self.setNick(newnick)
       self.nickname = newnick.decode() #do i have to do this?
     else:
-      addline(self.server.network.serverwindow, ' * "%s" is an erroneous nick' % XXX)#todo: find out where %s is in the params
+      print(f"{params=}")
+      addline(self.server.network.serverwindow, ' * Nick "%s" is erroneous' % params[2])#todo: find out where %s is in the params
       
   def kickedFrom(self, channelname, kicker, message):
     channels = self.server.network.channels
@@ -1047,7 +1055,7 @@ class ServerFactory(protocol.ReconnectingClientFactory):
     self.nickname = nickname
     self.username = username
     self.password = password
-    self.realname = realname
+    self.realname = realname or "qttirc"
     protocol.ReconnectingClientFactory.initialDelay = 10 #should i leave this at 1?
     protocol.ReconnectingClientFactory.maxDelay = 10 #no idea what value this should be. 3.5 wasn't slow enough, i was being throttled.
     
@@ -1067,7 +1075,7 @@ class ServerFactory(protocol.ReconnectingClientFactory):
   def clientConnectionLost(self, connector, reason):
     """If we get disconnected, reconnect to server."""
     self.serverconnection = None
-    addline(self.network.serverwindow, "* Disconnected. Reconnecting...")
+    addline(self.network.serverwindow, f"* Disconnected. Reconnecting...") #provide some way to view reason? they tend to be multiple lines..
     #reactor.callLater(config.reconnectdelay, connector.connect)
     for channel in self.network.channels.values():
       channel.channelwindow.nickslist.clear()
