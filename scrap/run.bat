@@ -1,0 +1,1 @@
+"c:\python3.8.0-32\python" qttwirc.py

@@ -1,0 +1,2442 @@
+Comparing files irc.2.py and IRC.PY
+***** irc.2.py
+"""
+#modifications of a couple of functions to pass entire hostmask instead of just the nick, by inhahe
+#other modifications noted at places of modification
+
+import errno, os, random, re, stat, struct, sys, time, types, traceback
+import operator
+***** IRC.PY
+"""
+
+import errno, os, random, re, stat, struct, sys, time, traceback
+import operator
+*****
+
+***** irc.2.py
+import shlex
+from os import path
+***** IRC.PY
+import shlex
+from functools import reduce
+from os import path
+*****
+
+***** irc.2.py
+from twisted.python import log, reflect, _textattributes
+
+***** IRC.PY
+from twisted.python import log, reflect, _textattributes
+from twisted.python.compat import unicode, range
+
+*****
+
+***** irc.2.py
+NUL = chr(0)
+CR = chr(015)
+NL = chr(012)
+LF = NL
+SPC = chr(040)
+
+***** IRC.PY
+NUL = chr(0)
+CR = chr(0o15)
+NL = chr(0o12)
+LF = NL
+SPC = chr(0o40)
+
+*****
+
+***** irc.2.py
+
+irclowertranslations = {
+    "ascii":          string.maketrans(string.uppercase,
+                                       string.lowercase),
+    "rfc1549":        string.maketrans(string.uppercase + "\x7B\x7C\x7D\x7E",
+                                       string.lowercase + "\x5B\x5C\x5E\x5F"),
+    "strict-rfc1549": string.maketrans(string.uppercase + "\x7B\x7C\x7D",
+                                       string.lowercase + "\x5B\x5C\x5E")
+}
+
+def irclower(text):
+  trans = irclowertranslations["rfc1549"]
+  return text.translate(trans)    
+
+usersplit = re.compile("(?P<nick>.*?)!(?P<ident>.*?)@(?P<host>.*)").match
+
+class IRCBadMessage(Exception):
+***** IRC.PY
+
+class IRCBadMessage(Exception):
+*****
+
+***** irc.2.py
+
+class IRCBadModes(ValueError):
+***** IRC.PY
+
+
+
+class IRCBadModes(ValueError):
+*****
+
+***** irc.2.py
+
+def parsemsg(s):
+***** IRC.PY
+
+
+
+def parsemsg(s):
+*****
+
+***** irc.2.py
+        raise IRCBadMessage("Empty line.")
+    if s[0] == ':':
+        prefix, s = s[1:].split(' ', 1)
+***** IRC.PY
+        raise IRCBadMessage("Empty line.")
+    if s[0:1] == ':':
+        prefix, s = s[1:].split(' ', 1)
+*****
+
+***** irc.2.py
+    is the mode character, and param is the parameter passed for that mode, or
+    C{None} if no parameter is required.
+
+***** IRC.PY
+    is the mode character, and param is the parameter passed for that mode, or
+    L{None} if no parameter is required.
+
+*****
+
+***** irc.2.py
+    def sendLine(self, line):
+        if self.encoding is not None:
+            if isinstance(line, unicode):
+                line = line.encode(self.encoding)
+        self.transport.write("%s%s%s" % (line, CR, LF))
+
+***** IRC.PY
+    def sendLine(self, line):
+        line = line + CR + LF
+        if isinstance(line, unicode):
+            useEncoding = self.encoding if self.encoding else "utf-8"
+            line = line.encode(useEncoding)
+        self.transport.write(line)
+
+*****
+
+***** irc.2.py
+        keyword argument 'prefix'.
+        """
+***** IRC.PY
+        keyword argument 'prefix'.
+
+        The L{sendCommand} method is generally preferred over this one.
+        Notably, this method does not support sending message tags, while the
+        L{sendCommand} method does.
+        """
+*****
+
+***** irc.2.py
+
+    def dataReceived(self, data):
+        """
+        This hack is to support mIRC, which sends LF only, even though the RFC
+        says CRLF.  (Also, the flexibility of LineReceiver to turn "line mode"
+        on and off was not required.)
+        """
+        lines = (self.buffer + data).split(LF)
+        # Put the (possibly empty) element after the last LF back in the
+        # buffer
+        self.buffer = lines.pop()
+
+        for line in lines:
+            if len(line) <= 2:
+                # This is a blank line, at best.
+                continue
+            if line[-1] == CR:
+                line = line[:-1]
+            prefix, command, params = parsemsg(line)
+            # mIRC is a big pile of doo-doo
+            command = command.upper()
+            # DEBUG: log.msg( "%s %s %s" % (prefix, command, params))
+
+            self.handleCommand(command, prefix, params)
+
+***** IRC.PY
+
+    def sendCommand(self, command, parameters, prefix=None, tags=None):
+        """
+        Send to the remote peer a line formatted as an IRC message.
+
+        @param command: The command or numeric to send.
+        @type command: L{unicode}
+
+        @param parameters: The parameters to send with the command.
+        @type parameters: A L{tuple} or L{list} of L{unicode} parameters
+
+        @param prefix: The prefix to send with the command.  If not
+            given, no prefix is sent.
+        @type prefix: L{unicode}
+
+        @param tags: A dict of message tags.  If not given, no message
+            tags are sent.  The dict key should be the name of the tag
+            to send as a string; the value should be the unescaped value
+            to send with the tag, or either None or "" if no value is to
+            be sent with the tag.
+        @type tags: L{dict} of tags (L{unicode}) => values (L{unicode})
+        @see: U{https://ircv3.net/specs/core/message-tags-3.2.html}
+        """
+        if not command:
+            raise ValueError("IRC message requires a command.")
+
+        if " " in command or command[0] == ":":
+            # Not the ONLY way to screw up, but provides a little
+            # sanity checking to catch likely dumb mistakes.
+            raise ValueError('Invalid command: "%s"' % (command,))
+
+        if tags is None:
+            tags = {}
+
+        line = " ".join([command] + list(parameters))
+        if prefix:
+            line = ":%s %s" % (prefix, line)
+        if tags:
+            tagStr = self._stringTags(tags)
+            line = "@%s %s" % (tagStr, line)
+        self.sendLine(line)
+
+        if len(parameters) > 15:
+            log.msg("Message has %d parameters (RFC allows 15):\n%s" %
+                    (len(parameters), line))
+
+*****
+
+***** irc.2.py
+
+    def handleCommand(self, command, prefix, params):
+        """
+        Determine the function to call for the given command and call it with
+        the given arguments.
+
+        @param command: The IRC command to determine the function for.
+        @type command: L{bytes}
+
+        @param prefix: The prefix of the IRC message (as returned by
+            L{parsemsg}).
+        @type prefix: L{bytes}
+
+        @param params: A list of parameters to call the function with.
+        @type params: L{list}
+        """
+        method = getattr(self, "irc_%s" % command, None)
+        try:
+            if method is not None:
+                method(prefix, params)
+            else:
+                self.irc_unknown(prefix, command, params)
+        except:
+            log.deferr()
+
+***** IRC.PY
+
+    def _stringTags(self, tags):
+        """
+        Converts a tag dictionary to a string.
+
+        @param tags: The tag dict passed to sendMsg.
+
+        @rtype: L{unicode}
+        @return: IRCv3-format tag string
+        """
+        self._validateTags(tags)
+        tagStrings = []
+        for tag, value in tags.items():
+            if value:
+                tagStrings.append("%s=%s" % (tag, self._escapeTagValue(value)))
+            else:
+                tagStrings.append(tag)
+        return ";".join(tagStrings)
+
+*****
+
+***** irc.2.py
+
+    def irc_unknown(self, prefix, command, params):
+        """
+        Called by L{handleCommand} on a command that doesn't have a defined
+        handler. Subclasses should override this method.
+        """
+        raise NotImplementedError(command, prefix, params)
+
+***** IRC.PY
+
+    def _validateTags(self, tags):
+        """
+        Checks the tag dict for errors and raises L{ValueError} if an
+        error is found.
+
+        @param tags: The tag dict passed to sendMsg.
+        """
+        for tag, value in tags.items():
+            if not tag:
+                raise ValueError("A tag name is required.")
+            for char in tag:
+                if not char.isalnum() and char not in ("-", "/", "."):
+                    raise ValueError("Tag contains invalid characters.")
+
+*****
+
+***** irc.2.py
+
+    # Helper methods
+    def privmsg(self, sender, recip, message): 
+        """
+        Send a message to a channel or user
+
+        @type sender: C{str} or C{unicode}
+        @param sender: Who is sending this message.  Should be of the form
+            username!ident@hostmask (unless you know better!).
+
+        @type recip: C{str} or C{unicode}
+        @param recip: The recipient of this message.  If a channel, it must
+            start with a channel prefix.
+
+        @type message: C{str} or C{unicode}
+        @param message: The message being sent.
+        """
+        self.sendLine(":%s PRIVMSG %s :%s" % (sender, recip, lowQuote(message)))
+
+***** IRC.PY
+
+    def _escapeTagValue(self, value):
+        """
+        Escape the given tag value according to U{escaping rules in IRCv3
+        <https://ircv3.net/specs/core/message-tags-3.2.html>}.
+
+        @param value: The string value to escape.
+        @type value: L{str}
+
+        @return: The escaped string for sending as a message value
+        @rtype: L{str}
+        """
+        return (value.replace("\\", "\\\\")
+            .replace(";", "\\:")
+            .replace(" ", "\\s")
+            .replace("\r", "\\r")
+            .replace("\n", "\\n")
+            )
+
+*****
+
+***** irc.2.py
+
+    def notice(self, sender, recip, message):
+        """
+        Send a "notice" to a channel or user.
+
+        Notices differ from privmsgs in that the RFC claims they are different.
+        Robots are supposed to send notices and not respond to them.  Clients
+        typically display notices differently from privmsgs.
+
+        @type sender: C{str} or C{unicode}
+        @param sender: Who is sending this message.  Should be of the form
+            username!ident@hostmask (unless you know better!).
+
+        @type recip: C{str} or C{unicode}
+        @param recip: The recipient of this message.  If a channel, it must
+            start with a channel prefix.
+
+        @type message: C{str} or C{unicode}
+        @param message: The message being sent.
+        """
+        self.sendLine(":%s NOTICE %s :%s" % (sender, recip, message))
+
+***** IRC.PY
+
+    def dataReceived(self, data):
+        """
+        This hack is to support mIRC, which sends LF only, even though the RFC
+        says CRLF.  (Also, the flexibility of LineReceiver to turn "line mode"
+        on and off was not required.)
+        """
+        if isinstance(data, bytes):
+            data = data.decode("utf-8")
+        lines = (self.buffer + data).split(LF)
+        # Put the (possibly empty) element after the last LF back in the
+        # buffer
+        self.buffer = lines.pop()
+
+        for line in lines:
+            if len(line) <= 2:
+                # This is a blank line, at best.
+                continue
+            if line[-1] == CR:
+                line = line[:-1]
+            prefix, command, params = parsemsg(line)
+            # mIRC is a big pile of doo-doo
+            command = command.upper()
+            # DEBUG: log.msg( "%s %s %s" % (prefix, command, params))
+
+            self.handleCommand(command, prefix, params)
+
+*****
+
+***** irc.2.py
+
+    def action(self, sender, recip, message):
+        """
+        Send an action to a channel or user.
+
+        @type sender: C{str} or C{unicode}
+        @param sender: Who is sending this message.  Should be of the form
+            username!ident@hostmask (unless you know better!).
+
+        @type recip: C{str} or C{unicode}
+        @param recip: The recipient of this message.  If a channel, it must
+            start with a channel prefix.
+
+        @type message: C{str} or C{unicode}
+        @param message: The action being sent.
+        """
+        self.sendLine(":%s ACTION %s :%s" % (sender, recip, message))
+
+***** IRC.PY
+
+    def handleCommand(self, command, prefix, params):
+        """
+        Determine the function to call for the given command and call it with
+        the given arguments.
+
+        @param command: The IRC command to determine the function for.
+        @type command: L{bytes}
+
+        @param prefix: The prefix of the IRC message (as returned by
+            L{parsemsg}).
+        @type prefix: L{bytes}
+
+        @param params: A list of parameters to call the function with.
+        @type params: L{list}
+        """
+        method = getattr(self, "irc_%s" % command, None)
+        try:
+            if method is not None:
+                method(prefix, params)
+            else:
+                self.irc_unknown(prefix, command, params)
+        except:
+            log.deferr()
+
+*****
+
+***** irc.2.py
+
+    def topic(self, user, channel, topic, author=None):
+        """
+        Send the topic to a user.
+
+        @type user: C{str} or C{unicode}
+        @param user: The user receiving the topic.  Only their nickname, not
+            the full hostmask.
+
+        @type channel: C{str} or C{unicode}
+        @param channel: The channel for which this is the topic.
+
+        @type topic: C{str} or C{unicode} or C{None}
+        @param topic: The topic string, unquoted, or None if there is no topic.
+
+        @type author: C{str} or C{unicode}
+        @param author: If the topic is being changed, the full username and
+            hostmask of the person changing it.
+        """
+        if author is None:
+            if topic is None:
+                self.sendLine(':%s %s %s %s :%s' % (
+                    self.hostname, RPL_NOTOPIC, user, channel, 'No topic is set.'))
+            else:
+                self.sendLine(":%s %s %s %s :%s" % (
+                    self.hostname, RPL_TOPIC, user, channel, lowQuote(topic)))
+        else:
+            self.sendLine(":%s TOPIC %s :%s" % (author, channel, lowQuote(topic)))
+
+***** IRC.PY
+
+    def irc_unknown(self, prefix, command, params):
+        """
+        Called by L{handleCommand} on a command that doesn't have a defined
+        handler. Subclasses should override this method.
+        """
+        raise NotImplementedError(command, prefix, params)
+
+*****
+
+***** irc.2.py
+
+    def topicAuthor(self, user, channel, author, date):
+        """
+        Send the author of and time at which a topic was set for the given
+        channel.
+
+        This sends a 333 reply message, which is not part of the IRC RFC.
+
+        @type user: C{str} or C{unicode}
+        @param user: The user receiving the topic.  Only their nickname, not
+            the full hostmask.
+
+        @type channel: C{str} or C{unicode}
+        @param channel: The channel for which this information is relevant.
+
+        @type author: C{str} or C{unicode}
+        @param author: The nickname (without hostmask) of the user who last set
+            the topic.
+
+        @type date: C{int}
+        @param date: A POSIX timestamp (number of seconds since the epoch) at
+            which the topic was last set.
+        """
+        self.sendLine(':%s %d %s %s %s %d' % (
+            self.hostname, 333, user, channel, author, date))
+
+***** IRC.PY
+
+    # Helper methods
+    def privmsg(self, sender, recip, message):
+        """
+        Send a message to a channel or user
+
+        @type sender: C{str} or C{unicode}
+        @param sender: Who is sending this message.  Should be of the form
+            username!ident@hostmask (unless you know better!).
+
+        @type recip: C{str} or C{unicode}
+        @param recip: The recipient of this message.  If a channel, it must
+            start with a channel prefix.
+
+        @type message: C{str} or C{unicode}
+        @param message: The message being sent.
+        """
+        self.sendCommand("PRIVMSG", (recip, ":%s" % (lowQuote(message),)), sender)
+
+*****
+
+***** irc.2.py
+
+    def names(self, user, channel, names):
+        """
+        Send the names of a channel's participants to a user.
+
+        @type user: C{str} or C{unicode}
+        @param user: The user receiving the name list.  Only their nickname,
+            not the full hostmask.
+
+        @type channel: C{str} or C{unicode}
+        @param channel: The channel for which this is the namelist.
+
+        @type names: C{list} of C{str} or C{unicode}
+        @param names: The names to send.
+        """
+        # XXX If unicode is given, these limits are not quite correct
+        prefixLength = len(channel) + len(user) + 10
+        namesLength = 512 - prefixLength
+
+        L = []
+        count = 0
+        for n in names:
+            if count + len(n) + 1 > namesLength:
+                self.sendLine(":%s %s %s = %s :%s" % (
+                    self.hostname, RPL_NAMREPLY, user, channel, ' '.join(L)))
+                L = [n]
+                count = len(n)
+            else:
+                L.append(n)
+                count += len(n) + 1
+        if L:
+            self.sendLine(":%s %s %s = %s :%s" % (
+                self.hostname, RPL_NAMREPLY, user, channel, ' '.join(L)))
+        self.sendLine(":%s %s %s %s :End of /NAMES list" % (
+            self.hostname, RPL_ENDOFNAMES, user, channel))
+
+***** IRC.PY
+
+    def notice(self, sender, recip, message):
+        """
+        Send a "notice" to a channel or user.
+
+        Notices differ from privmsgs in that the RFC claims they are different.
+        Robots are supposed to send notices and not respond to them.  Clients
+        typically display notices differently from privmsgs.
+
+        @type sender: C{str} or C{unicode}
+        @param sender: Who is sending this message.  Should be of the form
+            username!ident@hostmask (unless you know better!).
+
+        @type recip: C{str} or C{unicode}
+        @param recip: The recipient of this message.  If a channel, it must
+            start with a channel prefix.
+
+        @type message: C{str} or C{unicode}
+        @param message: The message being sent.
+        """
+        self.sendCommand("NOTICE", (recip, ":%s" % (message,)), sender)
+
+*****
+
+***** irc.2.py
+
+    def who(self, user, channel, memberInfo):
+        """
+        Send a list of users participating in a channel.
+
+***** IRC.PY
+
+    def action(self, sender, recip, message):
+        """
+        Send an action to a channel or user.
+
+        @type sender: C{str} or C{unicode}
+        @param sender: Who is sending this message.  Should be of the form
+            username!ident@hostmask (unless you know better!).
+
+        @type recip: C{str} or C{unicode}
+        @param recip: The recipient of this message.  If a channel, it must
+            start with a channel prefix.
+
+        @type message: C{str} or C{unicode}
+        @param message: The action being sent.
+        """
+        self.sendLine(":%s ACTION %s :%s" % (sender, recip, message))
+
+
+    def topic(self, user, channel, topic, author=None):
+        """
+        Send the topic to a user.
+
+*****
+
+***** irc.2.py
+        @type user: C{str} or C{unicode}
+        @param user: The user receiving this member information.  Only their
+            nickname, not the full hostmask.
+
+***** IRC.PY
+        @type user: C{str} or C{unicode}
+        @param user: The user receiving the topic.  Only their nickname, not
+            the full hostmask.
+
+*****
+
+***** irc.2.py
+        @type channel: C{str} or C{unicode}
+        @param channel: The channel for which this is the member information.
+
+        @type memberInfo: C{list} of C{tuples}
+        @param memberInfo: For each member of the given channel, a 7-tuple
+            containing their username, their hostmask, the server to which they
+            are connected, their nickname, the letter "H" or "G" (standing for
+            "Here" or "Gone"), the hopcount from C{user} to this member, and
+            this member's real name.
+        """
+        for info in memberInfo:
+            (username, hostmask, server, nickname, flag, hops, realName) = info
+            assert flag in ("H", "G")
+            self.sendLine(":%s %s %s %s %s %s %s %s %s :%d %s" % (
+                self.hostname, RPL_WHOREPLY, user, channel,
+                username, hostmask, server, nickname, flag, hops, realName))
+
+        self.sendLine(":%s %s %s %s :End of /WHO list." % (
+            self.hostname, RPL_ENDOFWHO, user, channel))
+
+***** IRC.PY
+        @type channel: C{str} or C{unicode}
+        @param channel: The channel for which this is the topic.
+
+        @type topic: C{str} or C{unicode} or L{None}
+        @param topic: The topic string, unquoted, or None if there is no topic.
+
+        @type author: C{str} or C{unicode}
+        @param author: If the topic is being changed, the full username and
+            hostmask of the person changing it.
+        """
+        if author is None:
+            if topic is None:
+                self.sendLine(':%s %s %s %s :%s' % (
+                    self.hostname, RPL_NOTOPIC, user, channel, 'No topic is set.'))
+            else:
+                self.sendLine(":%s %s %s %s :%s" % (
+                    self.hostname, RPL_TOPIC, user, channel, lowQuote(topic)))
+        else:
+            self.sendLine(":%s TOPIC %s :%s" % (author, channel, lowQuote(topic)))
+
+*****
+
+***** irc.2.py
+
+    def whois(self, user, nick, username, hostname, realName, server, serverInfo, oper, idle, signOn, channels):
+        """
+        Send information about the state of a particular user.
+
+***** IRC.PY
+
+    def topicAuthor(self, user, channel, author, date):
+        """
+        Send the author of and time at which a topic was set for the given
+        channel.
+
+        This sends a 333 reply message, which is not part of the IRC RFC.
+
+*****
+
+***** irc.2.py
+        @type user: C{str} or C{unicode}
+        @param user: The user receiving this information.  Only their nickname,
+            not the full hostmask.
+***** IRC.PY
+        @type user: C{str} or C{unicode}
+        @param user: The user receiving the topic.  Only their nickname, not
+            the full hostmask.
+
+        @type channel: C{str} or C{unicode}
+        @param channel: The channel for which this information is relevant.
+
+        @type author: C{str} or C{unicode}
+        @param author: The nickname (without hostmask) of the user who last set
+            the topic.
+
+        @type date: C{int}
+        @param date: A POSIX timestamp (number of seconds since the epoch) at
+            which the topic was last set.
+        """
+        self.sendLine(':%s %d %s %s %s %d' % (
+            self.hostname, 333, user, channel, author, date))
+
+
+    def names(self, user, channel, names):
+        """
+        Send the names of a channel's participants to a user.
+
+        @type user: C{str} or C{unicode}
+        @param user: The user receiving the name list.  Only their nickname,
+            not the full hostmask.
+*****
+
+***** irc.2.py
+
+        @type nick: C{str} or C{unicode}
+        @param nick: The nickname of the user this information describes.
+
+        @type username: C{str} or C{unicode}
+        @param username: The user's username (eg, ident response)
+
+        @type hostname: C{str}
+        @param hostname: The user's hostmask
+
+        @type realName: C{str} or C{unicode}
+        @param realName: The user's real name
+
+        @type server: C{str} or C{unicode}
+        @param server: The name of the server to which the user is connected
+
+        @type serverInfo: C{str} or C{unicode}
+        @param serverInfo: A descriptive string about that server
+
+        @type oper: C{bool}
+        @param oper: Indicates whether the user is an IRC operator
+
+        @type idle: C{int}
+        @param idle: The number of seconds since the user last sent a message
+
+        @type signOn: C{int}
+        @param signOn: A POSIX timestamp (number of seconds since the epoch)
+            indicating the time the user signed on
+
+        @type channels: C{list} of C{str} or C{unicode}
+        @param channels: A list of the channels which the user is participating in
+        """
+        self.sendLine(":%s %s %s %s %s %s * :%s" % (
+            self.hostname, RPL_WHOISUSER, user, nick, username, hostname, realName))
+        self.sendLine(":%s %s %s %s %s :%s" % (
+            self.hostname, RPL_WHOISSERVER, user, nick, server, serverInfo))
+        if oper:
+            self.sendLine(":%s %s %s %s :is an IRC operator" % (
+                self.hostname, RPL_WHOISOPERATOR, user, nick))
+        self.sendLine(":%s %s %s %s %d %d :seconds idle, signon time" % (
+            self.hostname, RPL_WHOISIDLE, user, nick, idle, signOn))
+        self.sendLine(":%s %s %s %s :%s" % (
+            self.hostname, RPL_WHOISCHANNELS, user, nick, ' '.join(channels)))
+        self.sendLine(":%s %s %s %s :End of WHOIS list." % (
+            self.hostname, RPL_ENDOFWHOIS, user, nick))
+
+***** IRC.PY
+
+        @type channel: C{str} or C{unicode}
+        @param channel: The channel for which this is the namelist.
+
+        @type names: C{list} of C{str} or C{unicode}
+        @param names: The names to send.
+        """
+        # XXX If unicode is given, these limits are not quite correct
+        prefixLength = len(channel) + len(user) + 10
+        namesLength = 512 - prefixLength
+
+        L = []
+        count = 0
+        for n in names:
+            if count + len(n) + 1 > namesLength:
+                self.sendLine(":%s %s %s = %s :%s" % (
+                    self.hostname, RPL_NAMREPLY, user, channel, ' '.join(L)))
+                L = [n]
+                count = len(n)
+            else:
+                L.append(n)
+                count += len(n) + 1
+        if L:
+            self.sendLine(":%s %s %s = %s :%s" % (
+                self.hostname, RPL_NAMREPLY, user, channel, ' '.join(L)))
+        self.sendLine(":%s %s %s %s :End of /NAMES list" % (
+            self.hostname, RPL_ENDOFNAMES, user, channel))
+
+*****
+
+***** irc.2.py
+
+    def join(self, who, where):
+        """
+        Send a join message.
+
+        @type who: C{str} or C{unicode}
+        @param who: The name of the user joining.  Should be of the form
+            username!ident@hostmask (unless you know better!).
+
+        @type where: C{str} or C{unicode}
+        @param where: The channel the user is joining.
+        """
+        self.sendLine(":%s JOIN %s" % (who, where))
+
+***** IRC.PY
+
+    def who(self, user, channel, memberInfo):
+        """
+        Send a list of users participating in a channel.
+
+        @type user: C{str} or C{unicode}
+        @param user: The user receiving this member information.  Only their
+            nickname, not the full hostmask.
+
+        @type channel: C{str} or C{unicode}
+        @param channel: The channel for which this is the member information.
+
+        @type memberInfo: C{list} of C{tuples}
+        @param memberInfo: For each member of the given channel, a 7-tuple
+            containing their username, their hostmask, the server to which they
+            are connected, their nickname, the letter "H" or "G" (standing for
+            "Here" or "Gone"), the hopcount from C{user} to this member, and
+            this member's real name.
+        """
+        for info in memberInfo:
+            (username, hostmask, server, nickname, flag, hops, realName) = info
+            assert flag in ("H", "G")
+            self.sendLine(":%s %s %s %s %s %s %s %s %s :%d %s" % (
+                self.hostname, RPL_WHOREPLY, user, channel,
+                username, hostmask, server, nickname, flag, hops, realName))
+
+        self.sendLine(":%s %s %s %s :End of /WHO list." % (
+            self.hostname, RPL_ENDOFWHO, user, channel))
+
+*****
+
+***** irc.2.py
+
+    def part(self, who, where, reason=None):
+        """
+        Send a part message.
+
+        @type who: C{str} or C{unicode}
+        @param who: The name of the user joining.  Should be of the form
+            username!ident@hostmask (unless you know better!).
+
+        @type where: C{str} or C{unicode}
+        @param where: The channel the user is joining.
+
+        @type reason: C{str} or C{unicode}
+        @param reason: A string describing the misery which caused this poor
+            soul to depart.
+        """
+        if reason:
+            self.sendLine(":%s PART %s :%s" % (who, where, reason))
+        else:
+            self.sendLine(":%s PART %s" % (who, where))
+
+
+    def channelMode(self, user, channel, mode, *args):
+        """
+        Send information about the mode of a channel.
+
+***** IRC.PY
+
+    def whois(self, user, nick, username, hostname, realName, server, serverInfo, oper, idle, signOn, channels):
+        """
+        Send information about the state of a particular user.
+
+*****
+
+***** irc.2.py
+        @type user: C{str} or C{unicode}
+        @param user: The user receiving the name list.  Only their nickname,
+            not the full hostmask.
+***** IRC.PY
+        @type user: C{str} or C{unicode}
+        @param user: The user receiving this information.  Only their nickname,
+            not the full hostmask.
+*****
+
+***** irc.2.py
+
+        @type channel: C{str} or C{unicode}
+        @param channel: The channel for which this is the namelist.
+
+        @type mode: C{str}
+        @param mode: A string describing this channel's modes.
+
+        @param args: Any additional arguments required by the modes.
+        """
+        self.sendLine(":%s %s %s %s %s %s" % (
+            self.hostname, RPL_CHANNELMODEIS, user, channel, mode, ' '.join(args)))
+
+***** IRC.PY
+
+        @type nick: C{str} or C{unicode}
+        @param nick: The nickname of the user this information describes.
+
+        @type username: C{str} or C{unicode}
+        @param username: The user's username (eg, ident response)
+
+        @type hostname: C{str}
+        @param hostname: The user's hostmask
+
+        @type realName: C{str} or C{unicode}
+        @param realName: The user's real name
+
+        @type server: C{str} or C{unicode}
+        @param server: The name of the server to which the user is connected
+
+        @type serverInfo: C{str} or C{unicode}
+        @param serverInfo: A descriptive string about that server
+
+        @type oper: C{bool}
+        @param oper: Indicates whether the user is an IRC operator
+
+        @type idle: C{int}
+        @param idle: The number of seconds since the user last sent a message
+
+        @type signOn: C{int}
+        @param signOn: A POSIX timestamp (number of seconds since the epoch)
+            indicating the time the user signed on
+
+        @type channels: C{list} of C{str} or C{unicode}
+        @param channels: A list of the channels which the user is participating in
+        """
+        self.sendLine(":%s %s %s %s %s %s * :%s" % (
+            self.hostname, RPL_WHOISUSER, user, nick, username, hostname, realName))
+        self.sendLine(":%s %s %s %s %s :%s" % (
+            self.hostname, RPL_WHOISSERVER, user, nick, server, serverInfo))
+        if oper:
+            self.sendLine(":%s %s %s %s :is an IRC operator" % (
+                self.hostname, RPL_WHOISOPERATOR, user, nick))
+        self.sendLine(":%s %s %s %s %d %d :seconds idle, signon time" % (
+            self.hostname, RPL_WHOISIDLE, user, nick, idle, signOn))
+        self.sendLine(":%s %s %s %s :%s" % (
+            self.hostname, RPL_WHOISCHANNELS, user, nick, ' '.join(channels)))
+        self.sendLine(":%s %s %s %s :End of WHOIS list." % (
+            self.hostname, RPL_ENDOFWHOIS, user, nick))
+
+*****
+
+***** irc.2.py
+
+
+class ServerSupportedFeatures(_CommandDispatcherMixin):
+    """
+    Handle ISUPPORT messages.
+
+    Feature names match those in the ISUPPORT RFC draft identically.
+
+    Information regarding the specifics of ISUPPORT was gleaned from
+    <http://www.irc.org/tech_docs/draft-brocklesby-irc-isupport-03.txt>.
+    """
+    prefix = 'isupport'
+
+    def __init__(self):
+        self._features = {
+            'CHANNELLEN': 200,
+            'CHANTYPES': tuple('#&'),
+            'MODES': 3,
+            'NICKLEN': 9,
+            'PREFIX': self._parsePrefixParam('(ovh)@+%'),
+            # The ISUPPORT draft explicitly says that there is no default for
+            # CHANMODES, but we're defaulting it here to handle the case where
+            # the IRC server doesn't send us any ISUPPORT information, since
+            # IRCClient.getChannelModeParams relies on this value.
+            'CHANMODES': self._parseChanModesParam(['b', '', 'lk'])}
+
+***** IRC.PY
+
+    def join(self, who, where):
+        """
+        Send a join message.
+
+        @type who: C{str} or C{unicode}
+        @param who: The name of the user joining.  Should be of the form
+            username!ident@hostmask (unless you know better!).
+
+        @type where: C{str} or C{unicode}
+        @param where: The channel the user is joining.
+        """
+        self.sendLine(":%s JOIN %s" % (who, where))
+
+*****
+
+***** irc.2.py
+
+    def _splitParamArgs(cls, params, valueProcessor=None):
+        """
+        Split ISUPPORT parameter arguments.
+
+        Values can optionally be processed by C{valueProcessor}.
+
+        For example::
+
+            >>> ServerSupportedFeatures._splitParamArgs(['A:1', 'B:2'])
+            (('A', '1'), ('B', '2'))
+
+        @type params: C{iterable} of C{str}
+
+        @type valueProcessor: C{callable} taking {str}
+        @param valueProcessor: Callable to process argument values, or C{None}
+            to perform no processing
+
+        @rtype: C{list} of C{(str, object)}
+        @return: Sequence of C{(name, processedValue)}
+        """
+        if valueProcessor is None:
+            valueProcessor = lambda x: x
+
+        def _parse():
+            for param in params:
+                if ':' not in param:
+                    param += ':'
+                a, b = param.split(':', 1)
+                yield a, valueProcessor(b)
+        return list(_parse())
+    _splitParamArgs = classmethod(_splitParamArgs)
+
+***** IRC.PY
+
+    def part(self, who, where, reason=None):
+        """
+        Send a part message.
+
+        @type who: C{str} or C{unicode}
+        @param who: The name of the user joining.  Should be of the form
+            username!ident@hostmask (unless you know better!).
+
+        @type where: C{str} or C{unicode}
+        @param where: The channel the user is joining.
+
+        @type reason: C{str} or C{unicode}
+        @param reason: A string describing the misery which caused this poor
+            soul to depart.
+        """
+        if reason:
+            self.sendLine(":%s PART %s :%s" % (who, where, reason))
+        else:
+            self.sendLine(":%s PART %s" % (who, where))
+
+*****
+
+***** irc.2.py
+
+    def _unescapeParamValue(cls, value):
+        """
+        Unescape an ISUPPORT parameter.
+
+        The only form of supported escape is C{\\xHH}, where HH must be a valid
+        2-digit hexadecimal number.
+
+        @rtype: C{str}
+        """
+        def _unescape():
+            parts = value.split('\\x')
+            # The first part can never be preceded by the escape.
+            yield parts.pop(0)
+            for s in parts:
+                octet, rest = s[:2], s[2:]
+                try:
+                    octet = int(octet, 16)
+                except ValueError:
+                    raise ValueError('Invalid hex octet: %r' % (octet,))
+                yield chr(octet) + rest
+
+        if '\\x' not in value:
+            return value
+        return ''.join(_unescape())
+    _unescapeParamValue = classmethod(_unescapeParamValue)
+
+***** IRC.PY
+
+    def channelMode(self, user, channel, mode, *args):
+        """
+        Send information about the mode of a channel.
+
+        @type user: C{str} or C{unicode}
+        @param user: The user receiving the name list.  Only their nickname,
+            not the full hostmask.
+
+        @type channel: C{str} or C{unicode}
+        @param channel: The channel for which this is the namelist.
+
+        @type mode: C{str}
+        @param mode: A string describing this channel's modes.
+
+        @param args: Any additional arguments required by the modes.
+        """
+        self.sendLine(":%s %s %s %s %s %s" % (
+            self.hostname, RPL_CHANNELMODEIS, user, channel, mode, ' '.join(args)))
+
+*****
+
+***** irc.2.py
+
+    def _splitParam(cls, param):
+        """
+        Split an ISUPPORT parameter.
+
+        @type param: C{str}
+
+        @rtype: C{(str, list)}
+        @return C{(key, arguments)}
+        """
+        if '=' not in param:
+            param += '='
+        key, value = param.split('=', 1)
+        return key, map(cls._unescapeParamValue, value.split(','))
+    _splitParam = classmethod(_splitParam)
+
+***** IRC.PY
+
+
+class ServerSupportedFeatures(_CommandDispatcherMixin):
+    """
+    Handle ISUPPORT messages.
+
+    Feature names match those in the ISUPPORT RFC draft identically.
+
+    Information regarding the specifics of ISUPPORT was gleaned from
+    <http://www.irc.org/tech_docs/draft-brocklesby-irc-isupport-03.txt>.
+    """
+    prefix = 'isupport'
+
+    def __init__(self):
+        self._features = {
+            'CHANNELLEN': 200,
+            'CHANTYPES': tuple('#&'),
+            'MODES': 3,
+            'NICKLEN': 9,
+            'PREFIX': self._parsePrefixParam('(ovh)@+%'),
+            # The ISUPPORT draft explicitly says that there is no default for
+            # CHANMODES, but we're defaulting it here to handle the case where
+            # the IRC server doesn't send us any ISUPPORT information, since
+            # IRCClient.getChannelModeParams relies on this value.
+            'CHANMODES': self._parseChanModesParam(['b', '', 'lk', ''])}
+
+*****
+
+***** irc.2.py
+
+    def _parsePrefixParam(cls, prefix):
+        """
+        Parse the ISUPPORT "PREFIX" parameter.
+
+        The order in which the parameter arguments appear is significant, the
+        earlier a mode appears the more privileges it gives.
+
+        @rtype: C{dict} mapping C{str} to C{(str, int)}
+        @return: A dictionary mapping a mode character to a two-tuple of
+            C({symbol, priority)}, the lower a priority (the lowest being
+            C{0}) the more privileges it gives
+        """
+        if not prefix:
+            return None
+        if prefix[0] != '(' and ')' not in prefix:
+            raise ValueError('Malformed PREFIX parameter')
+        modes, symbols = prefix.split(')', 1)
+        symbols = zip(symbols, xrange(len(symbols)))
+        modes = modes[1:]
+        return dict(zip(modes, symbols))
+    _parsePrefixParam = classmethod(_parsePrefixParam)
+
+***** IRC.PY
+
+    @classmethod
+    def _splitParamArgs(cls, params, valueProcessor=None):
+        """
+        Split ISUPPORT parameter arguments.
+
+        Values can optionally be processed by C{valueProcessor}.
+
+        For example::
+
+            >>> ServerSupportedFeatures._splitParamArgs(['A:1', 'B:2'])
+            (('A', '1'), ('B', '2'))
+
+        @type params: C{iterable} of C{str}
+
+        @type valueProcessor: C{callable} taking {str}
+        @param valueProcessor: Callable to process argument values, or L{None}
+            to perform no processing
+
+        @rtype: C{list} of C{(str, object)}
+        @return: Sequence of C{(name, processedValue)}
+        """
+        if valueProcessor is None:
+            valueProcessor = lambda x: x
+
+        def _parse():
+            for param in params:
+                if ':' not in param:
+                    param += ':'
+                a, b = param.split(':', 1)
+                yield a, valueProcessor(b)
+        return list(_parse())
+
+*****
+
+***** irc.2.py
+
+    def _parseChanModesParam(self, params):
+        """
+        Parse the ISUPPORT "CHANMODES" parameter.
+
+        See L{isupport_CHANMODES} for a detailed explanation of this parameter.
+        """
+        names = ('addressModes', 'param', 'setParam', 'noParam')
+        if len(params) > len(names):
+            raise ValueError(
+                'Expecting a maximum of %d channel mode parameters, got %d' % (
+                    len(names), len(params)))
+        items = map(lambda key, value: (key, value or ''), names, params)
+        return dict(items)
+    _parseChanModesParam = classmethod(_parseChanModesParam)
+
+***** IRC.PY
+
+    @classmethod
+    def _unescapeParamValue(cls, value):
+        """
+        Unescape an ISUPPORT parameter.
+
+        The only form of supported escape is C{\\xHH}, where HH must be a valid
+        2-digit hexadecimal number.
+
+        @rtype: C{str}
+        """
+        def _unescape():
+            parts = value.split('\\x')
+            # The first part can never be preceded by the escape.
+            yield parts.pop(0)
+            for s in parts:
+                octet, rest = s[:2], s[2:]
+                try:
+                    octet = int(octet, 16)
+                except ValueError:
+                    raise ValueError('Invalid hex octet: %r' % (octet,))
+                yield chr(octet) + rest
+
+        if '\\x' not in value:
+            return value
+        return ''.join(_unescape())
+
+*****
+
+***** irc.2.py
+
+    def getFeature(self, feature, default=None):
+        """
+        Get a server supported feature's value.
+
+        A feature with the value C{None} is equivalent to the feature being
+        unsupported.
+
+        @type feature: C{str}
+        @param feature: Feature name
+
+        @type default: C{object}
+        @param default: The value to default to, assuming that C{feature}
+            is not supported
+
+        @return: Feature value
+        """
+        return self._features.get(feature, default)
+
+***** IRC.PY
+
+    @classmethod
+    def _splitParam(cls, param):
+        """
+        Split an ISUPPORT parameter.
+
+        @type param: C{str}
+
+        @rtype: C{(str, list)}
+        @return C{(key, arguments)}
+        """
+        if '=' not in param:
+            param += '='
+        key, value = param.split('=', 1)
+        return key, [cls._unescapeParamValue(v) for v in value.split(',')]
+
+*****
+
+***** irc.2.py
+
+    def hasFeature(self, feature):
+        """
+        Determine whether a feature is supported or not.
+
+        @rtype: C{bool}
+        """
+        return self.getFeature(feature) is not None
+
+***** IRC.PY
+
+    @classmethod
+    def _parsePrefixParam(cls, prefix):
+        """
+        Parse the ISUPPORT "PREFIX" parameter.
+
+        The order in which the parameter arguments appear is significant, the
+        earlier a mode appears the more privileges it gives.
+
+        @rtype: C{dict} mapping C{str} to C{(str, int)}
+        @return: A dictionary mapping a mode character to a two-tuple of
+            C({symbol, priority)}, the lower a priority (the lowest being
+            C{0}) the more privileges it gives
+        """
+        if not prefix:
+            return None
+        if prefix[0] != '(' and ')' not in prefix:
+            raise ValueError('Malformed PREFIX parameter')
+        modes, symbols = prefix.split(')', 1)
+        symbols = zip(symbols, range(len(symbols)))
+        modes = modes[1:]
+        return dict(zip(modes, symbols))
+
+*****
+
+***** irc.2.py
+
+    def parse(self, params):
+        """
+        Parse ISUPPORT parameters.
+
+        If an unknown parameter is encountered, it is simply added to the
+        dictionary, keyed by its name, as a tuple of the parameters provided.
+
+        @type params: C{iterable} of C{str}
+        @param params: Iterable of ISUPPORT parameters to parse
+        """
+        for param in params:
+            key, value = self._splitParam(param)
+            if key.startswith('-'):
+                self._features.pop(key[1:], None)
+            else:
+                self._features[key] = self.dispatch(key, value)
+
+***** IRC.PY
+
+    @classmethod
+    def _parseChanModesParam(self, params):
+        """
+        Parse the ISUPPORT "CHANMODES" parameter.
+
+        See L{isupport_CHANMODES} for a detailed explanation of this parameter.
+        """
+        names = ('addressModes', 'param', 'setParam', 'noParam')
+        if len(params) > len(names):
+            raise ValueError(
+                'Expecting a maximum of %d channel mode parameters, got %d' % (
+                    len(names), len(params)))
+        items = map(lambda key, value: (key, value or ''), names, params)
+        return dict(items)
+
+*****
+
+***** irc.2.py
+
+    def isupport_unknown(self, command, params):
+        """
+        Unknown ISUPPORT parameter.
+        """
+        return tuple(params)
+
+***** IRC.PY
+
+    def getFeature(self, feature, default=None):
+        """
+        Get a server supported feature's value.
+
+        A feature with the value L{None} is equivalent to the feature being
+        unsupported.
+
+        @type feature: C{str}
+        @param feature: Feature name
+
+        @type default: C{object}
+        @param default: The value to default to, assuming that C{feature}
+            is not supported
+
+        @return: Feature value
+        """
+        return self._features.get(feature, default)
+
+*****
+
+***** irc.2.py
+
+    def isupport_CHANLIMIT(self, params):
+        """
+        The maximum number of each channel type a user may join.
+        """
+        return self._splitParamArgs(params, _intOrDefault)
+
+***** IRC.PY
+
+    def hasFeature(self, feature):
+        """
+        Determine whether a feature is supported or not.
+
+        @rtype: C{bool}
+        """
+        return self.getFeature(feature) is not None
+
+*****
+
+***** irc.2.py
+
+    def isupport_CHANMODES(self, params):
+        """
+        Available channel modes.
+
+        There are 4 categories of channel mode::
+
+            addressModes - Modes that add or remove an address to or from a
+            list, these modes always take a parameter.
+
+            param - Modes that change a setting on a channel, these modes
+            always take a parameter.
+
+            setParam - Modes that change a setting on a channel, these modes
+            only take a parameter when being set.
+
+            noParam - Modes that change a setting on a channel, these modes
+            never take a parameter.
+        """
+        try:
+            return self._parseChanModesParam(params)
+        except ValueError:
+            return self.getFeature('CHANMODES')
+
+***** IRC.PY
+
+    def parse(self, params):
+        """
+        Parse ISUPPORT parameters.
+
+        If an unknown parameter is encountered, it is simply added to the
+        dictionary, keyed by its name, as a tuple of the parameters provided.
+
+        @type params: C{iterable} of C{str}
+        @param params: Iterable of ISUPPORT parameters to parse
+        """
+        for param in params:
+            key, value = self._splitParam(param)
+            if key.startswith('-'):
+                self._features.pop(key[1:], None)
+            else:
+                self._features[key] = self.dispatch(key, value)
+
+*****
+
+***** irc.2.py
+
+    def isupport_CHANNELLEN(self, params):
+        """
+        Maximum length of a channel name a client may create.
+        """
+        return _intOrDefault(params[0], self.getFeature('CHANNELLEN'))
+
+***** IRC.PY
+
+    def isupport_unknown(self, command, params):
+        """
+        Unknown ISUPPORT parameter.
+        """
+        return tuple(params)
+
+*****
+
+***** irc.2.py
+
+    def isupport_CHANTYPES(self, params):
+        """
+        Valid channel prefixes.
+        """
+        return tuple(params[0])
+
+***** IRC.PY
+
+    def isupport_CHANLIMIT(self, params):
+        """
+        The maximum number of each channel type a user may join.
+        """
+        return self._splitParamArgs(params, _intOrDefault)
+
+*****
+
+***** irc.2.py
+
+    def isupport_EXCEPTS(self, params):
+        """
+        Mode character for "ban exceptions".
+
+        The presence of this parameter indicates that the server supports
+        this functionality.
+        """
+        return params[0] or 'e'
+
+***** IRC.PY
+
+    def isupport_CHANMODES(self, params):
+        """
+        Available channel modes.
+
+        There are 4 categories of channel mode::
+
+            addressModes - Modes that add or remove an address to or from a
+            list, these modes always take a parameter.
+
+            param - Modes that change a setting on a channel, these modes
+            always take a parameter.
+
+            setParam - Modes that change a setting on a channel, these modes
+            only take a parameter when being set.
+
+            noParam - Modes that change a setting on a channel, these modes
+            never take a parameter.
+        """
+        try:
+            return self._parseChanModesParam(params)
+        except ValueError:
+            return self.getFeature('CHANMODES')
+
+*****
+
+***** irc.2.py
+
+    def isupport_IDCHAN(self, params):
+        """
+        Safe channel identifiers.
+
+        The presence of this parameter indicates that the server supports
+        this functionality.
+        """
+        return self._splitParamArgs(params)
+
+***** IRC.PY
+
+    def isupport_CHANNELLEN(self, params):
+        """
+        Maximum length of a channel name a client may create.
+        """
+        return _intOrDefault(params[0], self.getFeature('CHANNELLEN'))
+
+*****
+
+***** irc.2.py
+
+    def isupport_INVEX(self, params):
+        """
+        Mode character for "invite exceptions".
+
+        The presence of this parameter indicates that the server supports
+        this functionality.
+        """
+        return params[0] or 'I'
+
+***** IRC.PY
+
+    def isupport_CHANTYPES(self, params):
+        """
+        Valid channel prefixes.
+        """
+        return tuple(params[0])
+
+*****
+
+***** irc.2.py
+
+    def isupport_KICKLEN(self, params):
+        """
+        Maximum length of a kick message a client may provide.
+        """
+        return _intOrDefault(params[0])
+
+***** IRC.PY
+
+    def isupport_EXCEPTS(self, params):
+        """
+        Mode character for "ban exceptions".
+
+        The presence of this parameter indicates that the server supports
+        this functionality.
+        """
+        return params[0] or 'e'
+
+*****
+
+***** irc.2.py
+
+    def isupport_MAXLIST(self, params):
+        """
+        Maximum number of "list modes" a client may set on a channel at once.
+
+        List modes are identified by the "addressModes" key in CHANMODES.
+        """
+        return self._splitParamArgs(params, _intOrDefault)
+
+***** IRC.PY
+
+    def isupport_IDCHAN(self, params):
+        """
+        Safe channel identifiers.
+
+        The presence of this parameter indicates that the server supports
+        this functionality.
+        """
+        return self._splitParamArgs(params)
+
+*****
+
+***** irc.2.py
+
+    def isupport_MODES(self, params):
+        """
+        Maximum number of modes accepting parameters that may be sent, by a
+        client, in a single MODE command.
+        """
+        return _intOrDefault(params[0])
+
+***** IRC.PY
+
+    def isupport_INVEX(self, params):
+        """
+        Mode character for "invite exceptions".
+
+        The presence of this parameter indicates that the server supports
+        this functionality.
+        """
+        return params[0] or 'I'
+
+*****
+
+***** irc.2.py
+
+    def isupport_NETWORK(self, params):
+        """
+        IRC network name.
+        """
+        return params[0]
+
+***** IRC.PY
+
+    def isupport_KICKLEN(self, params):
+        """
+        Maximum length of a kick message a client may provide.
+        """
+        return _intOrDefault(params[0])
+
+*****
+
+***** irc.2.py
+
+    def isupport_NICKLEN(self, params):
+        """
+        Maximum length of a nickname the client may use.
+        """
+        return _intOrDefault(params[0], self.getFeature('NICKLEN'))
+
+***** IRC.PY
+
+    def isupport_MAXLIST(self, params):
+        """
+        Maximum number of "list modes" a client may set on a channel at once.
+
+        List modes are identified by the "addressModes" key in CHANMODES.
+        """
+        return self._splitParamArgs(params, _intOrDefault)
+
+*****
+
+***** irc.2.py
+
+    def isupport_PREFIX(self, params):
+        """
+        Mapping of channel modes that clients may have to status flags.
+        """
+        try:
+            return self._parsePrefixParam(params[0])
+        except ValueError:
+            return self.getFeature('PREFIX')
+
+***** IRC.PY
+
+    def isupport_MODES(self, params):
+        """
+        Maximum number of modes accepting parameters that may be sent, by a
+        client, in a single MODE command.
+        """
+        return _intOrDefault(params[0])
+
+*****
+
+***** irc.2.py
+
+    def isupport_SAFELIST(self, params):
+        """
+        Flag indicating that a client may request a LIST without being
+        disconnected due to the large amount of data generated.
+        """
+        return True
+
+***** IRC.PY
+
+    def isupport_NETWORK(self, params):
+        """
+        IRC network name.
+        """
+        return params[0]
+
+*****
+
+***** irc.2.py
+
+    def isupport_STATUSMSG(self, params):
+        """
+        The server supports sending messages to only to clients on a channel
+        with a specific status.
+        """
+        return params[0]
+
+***** IRC.PY
+
+    def isupport_NICKLEN(self, params):
+        """
+        Maximum length of a nickname the client may use.
+        """
+        return _intOrDefault(params[0], self.getFeature('NICKLEN'))
+
+*****
+
+***** irc.2.py
+
+    def isupport_TARGMAX(self, params):
+        """
+        Maximum number of targets allowable for commands that accept multiple
+        targets.
+        """
+        return dict(self._splitParamArgs(params, _intOrDefault))
+
+***** IRC.PY
+
+    def isupport_PREFIX(self, params):
+        """
+        Mapping of channel modes that clients may have to status flags.
+        """
+        try:
+            return self._parsePrefixParam(params[0])
+        except ValueError:
+            return self.getFeature('PREFIX')
+
+*****
+
+***** irc.2.py
+
+    def isupport_TOPICLEN(self, params):
+        """
+        Maximum length of a topic that may be set.
+        """
+        return _intOrDefault(params[0])
+
+***** IRC.PY
+
+    def isupport_SAFELIST(self, params):
+        """
+        Flag indicating that a client may request a LIST without being
+        disconnected due to the large amount of data generated.
+        """
+        return True
+
+*****
+
+***** irc.2.py
+
+
+***** IRC.PY
+
+    def isupport_STATUSMSG(self, params):
+        """
+        The server supports sending messages to only to clients on a channel
+        with a specific status.
+        """
+        return params[0]
+
+
+    def isupport_TARGMAX(self, params):
+        """
+        Maximum number of targets allowable for commands that accept multiple
+        targets.
+        """
+        return dict(self._splitParamArgs(params, _intOrDefault))
+
+
+    def isupport_TOPICLEN(self, params):
+        """
+        Maximum length of a topic that may be set.
+        """
+        return _intOrDefault(params[0])
+
+
+
+*****
+
+***** irc.2.py
+    @ivar nickname: Nickname the client will use.
+    @ivar password: Password used to log on to the server.  May be C{None}.
+    @ivar realname: Supplied to the server during login as the "Real name"
+        or "ircname".  May be C{None}.
+    @ivar username: Supplied to the server during login as the "User name".
+        May be C{None}
+
+    @ivar userinfo: Sent in reply to a C{USERINFO} CTCP query.  If C{None}, no
+        USERINFO reply will be sent.
+***** IRC.PY
+    @ivar nickname: Nickname the client will use.
+    @ivar password: Password used to log on to the server.  May be L{None}.
+    @ivar realname: Supplied to the server during login as the "Real name"
+        or "ircname".  May be L{None}.
+    @ivar username: Supplied to the server during login as the "User name".
+        May be L{None}
+
+    @ivar userinfo: Sent in reply to a C{USERINFO} CTCP query.  If L{None}, no
+        USERINFO reply will be sent.
+*****
+
+***** irc.2.py
+        the user (and never should be set by the client)."
+    @ivar fingerReply: Sent in reply to a C{FINGER} CTCP query.  If C{None}, no
+        FINGER reply will be sent.
+***** IRC.PY
+        the user (and never should be set by the client)."
+    @ivar fingerReply: Sent in reply to a C{FINGER} CTCP query.  If L{None}, no
+        FINGER reply will be sent.
+*****
+
+***** irc.2.py
+
+    @ivar versionName: CTCP VERSION reply, client name.  If C{None}, no VERSION
+        reply will be sent.
+***** IRC.PY
+
+    @ivar versionName: CTCP VERSION reply, client name.  If L{None}, no VERSION
+        reply will be sent.
+*****
+
+***** irc.2.py
+    @ivar sourceURL: CTCP SOURCE reply, a URL where the source code of this
+        client may be found.  If C{None}, no SOURCE reply will be sent.
+
+***** IRC.PY
+    @ivar sourceURL: CTCP SOURCE reply, a URL where the source code of this
+        client may be found.  If L{None}, no SOURCE reply will be sent.
+
+*****
+
+***** irc.2.py
+    @ivar lineRate: Minimum delay between lines sent to the server.  If
+        C{None}, no delay will be imposed.
+    @type lineRate: Number of Seconds.
+***** IRC.PY
+    @ivar lineRate: Minimum delay between lines sent to the server.  If
+        L{None}, no delay will be imposed.
+    @type lineRate: Number of Seconds.
+*****
+
+***** irc.2.py
+    @ivar hostname: Host name of the IRC server the client is connected to.
+        Initially the host name is C{None} and later is set to the host name
+        from which the I{RPL_WELCOME} message is received.
+***** IRC.PY
+    @ivar hostname: Host name of the IRC server the client is connected to.
+        Initially the host name is L{None} and later is set to the host name
+        from which the I{RPL_WELCOME} message is received.
+*****
+
+***** irc.2.py
+        L{IRCClient._sendHeartbeat} every L{heartbeatInterval} seconds, or
+        C{None} if there is no heartbeat.
+
+***** IRC.PY
+        L{IRCClient._sendHeartbeat} every L{heartbeatInterval} seconds, or
+        L{None} if there is no heartbeat.
+
+*****
+
+***** irc.2.py
+    @ivar heartbeatInterval: Interval, in seconds, to send I{PING} messages to
+        the server as a form of keepalive, defaults to 120 seconds. Use C{None}
+        to disable the heartbeat.
+***** IRC.PY
+    @ivar heartbeatInterval: Interval, in seconds, to send I{PING} messages to
+        the server as a form of keepalive, defaults to 120 seconds. Use L{None}
+        to disable the heartbeat.
+*****
+
+***** irc.2.py
+
+    delimiter = '\n' # '\r\n' will also work (see dataReceived)
+
+***** IRC.PY
+
+    delimiter = b'\n' # b'\r\n' will also work (see dataReceived)
+
+*****
+
+***** irc.2.py
+
+    def irclower(self, text):
+      try:
+        trans = irclowertranslations[self.supported.getFeature("CASEMAPPING")]
+      except:
+        trans = irclowertranslations["rfc1549"]
+      return text.translate(trans)
+
+
+    def _reallySendLine(self, line):
+        return basic.LineReceiver.sendLine(self, lowQuote(line) + '\r')
+
+***** IRC.PY
+
+    def _reallySendLine(self, line):
+        quoteLine = lowQuote(line)
+        if isinstance(quoteLine, unicode):
+            quoteLine = quoteLine.encode("utf-8")
+        quoteLine += b'\r'
+        return basic.LineReceiver.sendLine(self, quoteLine)
+
+*****
+
+***** irc.2.py
+
+    def privmsg(self, user, channel, message): 
+        """
+***** IRC.PY
+
+    def privmsg(self, user, channel, message):
+        """
+*****
+
+***** irc.2.py
+        @param length: Maximum number of octets to send in a single
+            command, including the IRC protocol framing. If C{None} is given
+            then L{IRCClient._safeMaximumLineLength} is used to determine a
+***** IRC.PY
+        @param length: Maximum number of octets to send in a single
+            command, including the IRC protocol framing. If L{None} is given
+            then L{IRCClient._safeMaximumLineLength} is used to determine a
+*****
+
+***** irc.2.py
+        if text is None:
+            chars = string.letters + string.digits + string.punctuation
+            key = ''.join([random.choice(chars) for i in range(12)])
+***** IRC.PY
+        if text is None:
+            chars = string.ascii_letters + string.digits + string.punctuation
+            key = ''.join([random.choice(chars) for i in range(12)])
+*****
+
+***** irc.2.py
+            byValue.sort()
+            excess = self._MAX_PINGRING - len(self._pings)
+            for i in xrange(excess):
+                del self._pings[byValue[i][1]]
+***** IRC.PY
+            byValue.sort()
+            excess = len(self._pings) - self._MAX_PINGRING
+            for i in range(excess):
+                del self._pings[byValue[i][1]]
+*****
+
+***** irc.2.py
+        else:
+            self.userJoined(prefix, channel)
+
+***** IRC.PY
+        else:
+            self.userJoined(nick, channel)
+
+*****
+
+***** irc.2.py
+        else:
+            self.userLeft(prefix, channel)
+
+***** IRC.PY
+        else:
+            self.userLeft(nick, channel)
+
+*****
+
+***** irc.2.py
+        """
+        #nick = prefix.split('!')[0]
+        self.userQuit(prefix, params[0])
+
+***** IRC.PY
+        """
+        nick = prefix.split('!')[0]
+        self.userQuit(nick, params[0])
+
+*****
+
+***** irc.2.py
+                          'MODE message: MODE %s' % (' '.join(params),))
+        
+        #modification by inhahe
+        self.modeChanged(user, channel, added, removed)
+        
+        #else:
+        #    if added:
+        #        modes, params = zip(*added)
+        #        self.modeChanged(user, channel, True, ''.join(modes), params)
+        #
+        #    if removed:
+        #        modes, params = zip(*removed)
+        #        self.modeChanged(user, channel, False, ''.join(modes), params)
+
+***** IRC.PY
+                          'MODE message: MODE %s' % (' '.join(params),))
+        else:
+            if added:
+                modes, params = zip(*added)
+                self.modeChanged(user, channel, True, ''.join(modes), params)
+
+            if removed:
+                modes, params = zip(*removed)
+                self.modeChanged(user, channel, False, ''.join(modes), params)
+
+*****
+
+***** irc.2.py
+        """
+        orig = prefix
+        dest = params[0]
+        message = params[-1]
+***** IRC.PY
+        """
+        user = prefix
+        channel = params[0]
+        message = params[-1]
+*****
+
+***** irc.2.py
+
+        if message.startswith(X_DELIM):
+            m = ctcpExtract(message)
+***** IRC.PY
+
+        if not message:
+            # Don't raise an exception if we get blank message.
+            return
+
+        if message[0] == X_DELIM:
+            m = ctcpExtract(message)
+*****
+
+***** irc.2.py
+            if m['extended']:
+                self.ctcpQuery(orig, dest, m['extended'])
+            if not m['normal']:
+                return # wtf?  no subclassed method is called if not (m['extended'] or m['normal'])
+            message = string.join(m['normal'], ' ')
+
+        if dest == self.nickname:
+          self.privmsg(orig, message)
+        else:
+          self.chanmsg(orig, dest, message)
+          
+    def irc_NOTICE(self, prefix, params):
+***** IRC.PY
+            if m['extended']:
+                self.ctcpQuery(user, channel, m['extended'])
+
+            if not m['normal']:
+                return
+
+            message = ' '.join(m['normal'])
+
+        self.privmsg(user, channel, message)
+
+    def irc_NOTICE(self, prefix, params):
+*****
+
+***** irc.2.py
+
+        If no arguments are provided, respond with a list of known tags.
+        If an argument is provided, provide human-readable help on
+***** IRC.PY
+
+        If no arguments are provided, respond with a list of known tags, sorted
+        in alphabetical order.
+        If an argument is provided, provide human-readable help on
+*****
+
+***** irc.2.py
+        """
+
+        nick = user.split('!')[0]
+***** IRC.PY
+        """
+        nick = user.split('!')[0]
+*****
+
+***** irc.2.py
+            # methods.
+            names = reflect.prefixedMethodNames(self.__class__,
+                                                'ctcpQuery_')
+
+***** IRC.PY
+            # methods.
+            names = sorted(reflect.prefixedMethodNames(self.__class__,
+                                                       'ctcpQuery_'))
+
+*****
+
+***** irc.2.py
+        self.ctcpMakeReply(nick, [('ERRMSG',
+                                   "%s :No error has occoured." % data)])
+
+***** IRC.PY
+        self.ctcpMakeReply(nick, [('ERRMSG',
+                                   "%s :No error has occurred." % data)])
+
+*****
+
+***** irc.2.py
+        @type messages: a list of extended messages.  An extended
+        message is a (tag, data) tuple, where 'data' may be C{None}.
+        """
+***** IRC.PY
+        @type messages: a list of extended messages.  An extended
+        message is a (tag, data) tuple, where 'data' may be L{None}.
+        """
+*****
+
+***** irc.2.py
+        @type messages: a list of extended messages.  An extended
+        message is a (tag, data) tuple, where 'data' may be C{None}.
+        """
+***** IRC.PY
+        @type messages: a list of extended messages.  An extended
+        message is a (tag, data) tuple, where 'data' may be L{None}.
+        """
+*****
+
+***** irc.2.py
+        nick = user.split('!', 1)[0]
+        if (not self._pings) or (not self._pings.has_key((nick, data))):
+            raise IRCBadMessage,\
+                  "Bogus PING response from %s: %s" % (user, data)
+
+***** IRC.PY
+        nick = user.split('!', 1)[0]
+        if (not self._pings) or ((nick, data) not in self._pings):
+            raise IRCBadMessage(
+                "Bogus PING response from %s: %s" % (user, data))
+
+*****
+
+***** irc.2.py
+
+    ### Protocool methods
+
+***** IRC.PY
+
+    ### Protocol methods
+
+*****
+
+***** irc.2.py
+    def dataReceived(self, data):
+        basic.LineReceiver.dataReceived(self, data.replace('\r', ''))
+
+***** IRC.PY
+    def dataReceived(self, data):
+        if isinstance(data, unicode):
+            data = data.encode("utf-8")
+        data = data.replace(b'\r', b'')
+        basic.LineReceiver.dataReceived(self, data)
+
+
+*****
+
+***** irc.2.py
+    def lineReceived(self, line):
+        line = lowDequote(line)
+***** IRC.PY
+    def lineReceived(self, line):
+        if bytes != str and isinstance(line, bytes):
+            # decode bytes from transport to unicode
+            line = line.decode("utf-8")
+
+        line = lowDequote(line)
+*****
+
+***** irc.2.py
+                command = numeric_to_symbolic[command]
+                self.ERRorRPLcommand(command, prefix, params)
+            self.handleCommand(command, prefix, params)
+***** IRC.PY
+                command = numeric_to_symbolic[command]
+            self.handleCommand(command, prefix, params)
+*****
+
+***** irc.2.py
+
+    def ERRorRPLcommand(self, command, prefix, params):
+      pass
+
+***** IRC.PY
+
+
+*****
+
+***** irc.2.py
+        prefixes = self.supported.getFeature('PREFIX', {})
+        params[0] = params[1] = ''.join(prefixes.iterkeys())
+
+***** IRC.PY
+        prefixes = self.supported.getFeature('PREFIX', {})
+        params[0] = params[1] = ''.join(prefixes.keys())
+
+*****
+
+***** irc.2.py
+        """
+        self.IRCcommand(command, prefix, params) #modification by inhahe
+        method = getattr(self, "irc_%s" % command, None)
+***** IRC.PY
+        """
+        method = getattr(self, "irc_%s" % command, None)
+*****
+
+***** irc.2.py
+            if method is not None:
+                method(prefix, params)          
+            else:
+***** IRC.PY
+            if method is not None:
+                method(prefix, params)
+            else:
+*****
+
+***** irc.2.py
+        try:
+            address = long(address)
+        except ValueError:
+            raise IRCBadMessage,\
+                  "Indecipherable address %r" % (address,)
+        else:
+***** IRC.PY
+        try:
+            address = int(address)
+        except ValueError:
+            raise IRCBadMessage("Indecipherable address %r" % (address,))
+        else:
+*****
+
+***** irc.2.py
+    def __init__(self, file):
+        if type(file) is types.StringType:
+            self.file = open(file, 'r')
+***** IRC.PY
+    def __init__(self, file):
+        if type(file) is str:
+            self.file = open(file, 'r')
+*****
+
+***** irc.2.py
+    remoteParty = None
+    buffer = ""
+
+***** IRC.PY
+    remoteParty = None
+    buffer = b""
+
+*****
+
+***** irc.2.py
+        used here. targetUserOrChannel is potentially useful, while
+        the 'data' argument is soley for informational purposes.)
+        """
+***** IRC.PY
+        used here. targetUserOrChannel is potentially useful, while
+        the 'data' argument is solely for informational purposes.)
+        """
+*****
+
+***** irc.2.py
+        try:
+            address = long(address)
+        except ValueError:
+***** IRC.PY
+        try:
+            address = int(address)
+        except ValueError:
+*****
+
+***** irc.2.py
+    @type foreground: L{_ForegroundColorAttr}
+    @ivar foreground: Current foreground color attribute, or C{None}.
+
+***** IRC.PY
+    @type foreground: L{_ForegroundColorAttr}
+    @ivar foreground: Current foreground color attribute, or L{None}.
+
+*****
+
+***** irc.2.py
+    @type background: L{_BackgroundColorAttr}
+    @ivar background: Current background color attribute, or C{None}.
+
+***** IRC.PY
+    @type background: L{_BackgroundColorAttr}
+    @ivar background: Current background color attribute, or L{None}.
+
+*****
+
+***** irc.2.py
+    @return: String containing mIRC control sequences that mimic those
+        specified by L{formatted}.
+
+***** IRC.PY
+    @return: String containing mIRC control sequences that mimic those
+        specified by I{formatted}.
+
+*****
+
+***** irc.2.py
+
+X_DELIM = chr(001)
+
+***** IRC.PY
+
+X_DELIM = chr(0o01)
+
+*****
+
+***** irc.2.py
+    extended_messages[:] = map(ctcpDequote, extended_messages)
+    for i in xrange(len(extended_messages)):
+        m = extended_messages[i].split(SPC, 1)
+***** IRC.PY
+    extended_messages[:] = map(ctcpDequote, extended_messages)
+    for i in range(len(extended_messages)):
+        m = extended_messages[i].split(SPC, 1)
+*****
+
+***** irc.2.py
+
+M_QUOTE= chr(020)
+
+***** IRC.PY
+
+M_QUOTE= chr(0o20)
+
+*****
+
+***** irc.2.py
+    @type messages: a list of extended messages.  An extended
+    message is a (tag, data) tuple, where 'data' may be C{None}, a
+    string, or a list of strings to be joined with whitespace.
+***** IRC.PY
+    @type messages: a list of extended messages.  An extended
+    message is a (tag, data) tuple, where 'data' may be L{None}, a
+    string, or a list of strings to be joined with whitespace.
+*****
+
+***** irc.2.py
+        if data:
+            if not isinstance(data, types.StringType):
+                try:
+***** IRC.PY
+        if data:
+            if not isinstance(data, str):
+                try:
+*****
+
+***** irc.2.py
+RPL_ADMINME = '256'
+RPL_ADMINLOC = '257'
+RPL_ADMINLOC = '258'
+RPL_ADMINEMAIL = '259'
+***** IRC.PY
+RPL_ADMINME = '256'
+RPL_ADMINLOC1 = '257'
+RPL_ADMINLOC2 = '258'
+RPL_ADMINEMAIL = '259'
+*****
+
+***** irc.2.py
+ERR_BADMASK = '415'
+ERR_UNKNOWNCOMMAND = '421'
+***** IRC.PY
+ERR_BADMASK = '415'
+# Defined in errata.
+# https://www.rfc-editor.org/errata_search.php?rfc=2812&eid=2822
+ERR_TOOMANYMATCHES = '416'
+ERR_UNKNOWNCOMMAND = '421'
+*****
+
+***** irc.2.py
+    "RPL_ADMINME": '256',
+    "RPL_ADMINLOC": '257',
+    "RPL_ADMINLOC": '258',
+    "RPL_ADMINEMAIL": '259',
+***** IRC.PY
+    "RPL_ADMINME": '256',
+    "RPL_ADMINLOC1": '257',
+    "RPL_ADMINLOC2": '258',
+    "RPL_ADMINEMAIL": '259',
+*****
+
+***** irc.2.py
+    "ERR_BADMASK": '415',
+    "ERR_UNKNOWNCOMMAND": '421',
+***** IRC.PY
+    "ERR_BADMASK": '415',
+    "ERR_TOOMANYMATCHES": '416',
+    "ERR_UNKNOWNCOMMAND": '421',
+*****
+

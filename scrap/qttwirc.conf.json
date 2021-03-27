@@ -1,0 +1,20 @@
+{
+  "networks":
+  [
+    {
+      "username": "inhahe",
+      "nicks": ["inhahe_", "inhahe`", "inhahe``"],
+      "name": "localhost",
+      "channels": ["#scifi", "#psychic"],
+      "servers": [["localhost", 6667]]
+    }
+  ],
+  "nicks": ["inhahe_", "inhahe`", "inhahe__", "inhahe``"],
+  "real_name": "\u000B10Flower Child",
+  "reconnect_delay": 3,
+  "performonstartup": ["/load performonstartup.py"],
+  "loggingenabled": true
+}
+
+
+

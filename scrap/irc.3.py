@@ -33,20 +33,20 @@ Test coverage needs to be better.
 @see: U{The Client-To-Client-Protocol
 <http://www.irchelp.org/irchelp/rfc/ctcpspec.html>}
 """
+#modifications of a couple of functions to pass entire hostmask instead of just the nick, by inhahe
+#other modifications noted at places of modification
 
-import errno, os, random, re, stat, struct, sys, time, traceback
+import errno, os, random, re, stat, struct, sys, time, types, traceback
 import operator
 import string, socket
 import textwrap
 import shlex
-from functools import reduce
 from os import path
 
 from twisted.internet import reactor, protocol, task
 from twisted.persisted import styles
 from twisted.protocols import basic
 from twisted.python import log, reflect, _textattributes
-from twisted.python.compat import unicode, range
 
 NUL = chr(0)
 CR = chr(0o15)
@@ -60,12 +60,12 @@ MAX_COMMAND_LENGTH = 512
 CHANNEL_PREFIXES = '&#!+'
 
 irclowertranslations = {
-    "ascii":          str.maketrans(string.ascii_uppercase,
-                                       string.ascii_lowercase),
-    "rfc1549":        str.maketrans(string.ascii_uppercase + "\x7B\x7C\x7D\x7E",
-                                       string.ascii_lowercase + "\x5B\x5C\x5E\x5F"),
-    "strict-rfc1549": str.maketrans(string.ascii_uppercase + "\x7B\x7C\x7D",
-                                       string.ascii_lowercase + "\x5B\x5C\x5E")
+    "ascii":          string.maketrans(string.uppercase,
+                                       string.lowercase),
+    "rfc1549":        string.maketrans(string.uppercase + "\x7B\x7C\x7D\x7E",
+                                       string.lowercase + "\x5B\x5C\x5E\x5F"),
+    "strict-rfc1549": string.maketrans(string.uppercase + "\x7B\x7C\x7D",
+                                       string.lowercase + "\x5B\x5C\x5E")
 }
 
 def irclower(text):
@@ -80,14 +80,10 @@ class IRCBadMessage(Exception):
 class IRCPasswordMismatch(Exception):
     pass
 
-
-
 class IRCBadModes(ValueError):
     """
     A malformed mode was encountered while attempting to parse a mode string.
     """
-
-
 
 def parsemsg(s):
     """
@@ -104,7 +100,7 @@ def parsemsg(s):
     trailing = []
     if not s:
         raise IRCBadMessage("Empty line.")
-    if s[0:1] == ':':
+    if s[0] == ':':
         prefix, s = s[1:].split(' ', 1)
     if s.find(' :') != -1:
         s, trailing = s.split(' :', 1)
@@ -208,7 +204,7 @@ def parseModes(modes, params, paramModes=('', '')):
     The mode string is parsed into two lists of mode changes (added and
     removed), with each mode change represented as C{(mode, param)} where mode
     is the mode character, and param is the parameter passed for that mode, or
-    L{None} if no parameter is required.
+    C{None} if no parameter is required.
 
     @type modes: C{str}
     @param modes: Modes string to parse.
@@ -277,11 +273,10 @@ class IRC(protocol.Protocol):
 
 
     def sendLine(self, line):
-        line = line + CR + LF
-        if isinstance(line, unicode):
-            useEncoding = self.encoding if self.encoding else "utf-8"
-            line = line.encode(useEncoding)
-        self.transport.write(line)
+        if self.encoding is not None:
+            if isinstance(line, unicode):
+                line = line.encode(self.encoding)
+        self.transport.write("%s%s%s" % (line, CR, LF))
 
 
     def sendMessage(self, command, *parameter_list, **prefix):
@@ -291,10 +286,6 @@ class IRC(protocol.Protocol):
         First argument is the command, all subsequent arguments are parameters
         to that command.  If a prefix is desired, it may be specified with the
         keyword argument 'prefix'.
-
-        The L{sendCommand} method is generally preferred over this one.
-        Notably, this method does not support sending message tags, while the
-        L{sendCommand} method does.
         """
         if not command:
             raise ValueError("IRC message requires a command.")
@@ -315,113 +306,12 @@ class IRC(protocol.Protocol):
                     (len(parameter_list), line))
 
 
-    def sendCommand(self, command, parameters, prefix=None, tags=None):
-        """
-        Send to the remote peer a line formatted as an IRC message.
-
-        @param command: The command or numeric to send.
-        @type command: L{unicode}
-
-        @param parameters: The parameters to send with the command.
-        @type parameters: A L{tuple} or L{list} of L{unicode} parameters
-
-        @param prefix: The prefix to send with the command.  If not
-            given, no prefix is sent.
-        @type prefix: L{unicode}
-
-        @param tags: A dict of message tags.  If not given, no message
-            tags are sent.  The dict key should be the name of the tag
-            to send as a string; the value should be the unescaped value
-            to send with the tag, or either None or "" if no value is to
-            be sent with the tag.
-        @type tags: L{dict} of tags (L{unicode}) => values (L{unicode})
-        @see: U{https://ircv3.net/specs/core/message-tags-3.2.html}
-        """
-        if not command:
-            raise ValueError("IRC message requires a command.")
-
-        if " " in command or command[0] == ":":
-            # Not the ONLY way to screw up, but provides a little
-            # sanity checking to catch likely dumb mistakes.
-            raise ValueError('Invalid command: "%s"' % (command,))
-
-        if tags is None:
-            tags = {}
-
-        line = " ".join([command] + list(parameters))
-        if prefix:
-            line = ":%s %s" % (prefix, line)
-        if tags:
-            tagStr = self._stringTags(tags)
-            line = "@%s %s" % (tagStr, line)
-        self.sendLine(line)
-
-        if len(parameters) > 15:
-            log.msg("Message has %d parameters (RFC allows 15):\n%s" %
-                    (len(parameters), line))
-
-
-    def _stringTags(self, tags):
-        """
-        Converts a tag dictionary to a string.
-
-        @param tags: The tag dict passed to sendMsg.
-
-        @rtype: L{unicode}
-        @return: IRCv3-format tag string
-        """
-        self._validateTags(tags)
-        tagStrings = []
-        for tag, value in tags.items():
-            if value:
-                tagStrings.append("%s=%s" % (tag, self._escapeTagValue(value)))
-            else:
-                tagStrings.append(tag)
-        return ";".join(tagStrings)
-
-
-    def _validateTags(self, tags):
-        """
-        Checks the tag dict for errors and raises L{ValueError} if an
-        error is found.
-
-        @param tags: The tag dict passed to sendMsg.
-        """
-        for tag, value in tags.items():
-            if not tag:
-                raise ValueError("A tag name is required.")
-            for char in tag:
-                if not char.isalnum() and char not in ("-", "/", "."):
-                    raise ValueError("Tag contains invalid characters.")
-
-
-    def _escapeTagValue(self, value):
-        """
-        Escape the given tag value according to U{escaping rules in IRCv3
-        <https://ircv3.net/specs/core/message-tags-3.2.html>}.
-
-        @param value: The string value to escape.
-        @type value: L{str}
-
-        @return: The escaped string for sending as a message value
-        @rtype: L{str}
-        """
-        return (value.replace("\\", "\\\\")
-            .replace(";", "\\:")
-            .replace(" ", "\\s")
-            .replace("\r", "\\r")
-            .replace("\n", "\\n")
-            )
-
-
     def dataReceived(self, data):
         """
         This hack is to support mIRC, which sends LF only, even though the RFC
         says CRLF.  (Also, the flexibility of LineReceiver to turn "line mode"
         on and off was not required.)
         """
-        if isinstance(data, bytes):
-            data = data.decode("utf-8")
         lines = (self.buffer + data).split(LF)
         # Put the (possibly empty) element after the last LF back in the
         # buffer
@@ -456,8 +346,6 @@ class IRC(protocol.Protocol):
         @param params: A list of parameters to call the function with.
         @type params: L{list}
         """
-
-        self.IRCcommand(command, prefix, params) #modification by inhahe
         method = getattr(self, "irc_%s" % command, None)
         try:
             if method is not None:
@@ -477,7 +365,7 @@ class IRC(protocol.Protocol):
 
 
     # Helper methods
-    def privmsg(self, sender, recip, message):
+    def privmsg(self, sender, recip, message): 
         """
         Send a message to a channel or user
 
@@ -492,7 +380,7 @@ class IRC(protocol.Protocol):
         @type message: C{str} or C{unicode}
         @param message: The message being sent.
         """
-        self.sendCommand("PRIVMSG", (recip, ":%s" % (lowQuote(message),)), sender)
+        self.sendLine(":%s PRIVMSG %s :%s" % (sender, recip, lowQuote(message)))
 
 
     def notice(self, sender, recip, message):
@@ -514,7 +402,7 @@ class IRC(protocol.Protocol):
         @type message: C{str} or C{unicode}
         @param message: The message being sent.
         """
-        self.sendCommand("NOTICE", (recip, ":%s" % (message,)), sender)
+        self.sendLine(":%s NOTICE %s :%s" % (sender, recip, message))
 
 
     def action(self, sender, recip, message):
@@ -546,7 +434,7 @@ class IRC(protocol.Protocol):
         @type channel: C{str} or C{unicode}
         @param channel: The channel for which this is the topic.
 
-        @type topic: C{str} or C{unicode} or L{None}
+        @type topic: C{str} or C{unicode} or C{None}
         @param topic: The topic string, unquoted, or None if there is no topic.
 
         @type author: C{str} or C{unicode}
@@ -787,10 +675,9 @@ class ServerSupportedFeatures(_CommandDispatcherMixin):
             # CHANMODES, but we're defaulting it here to handle the case where
             # the IRC server doesn't send us any ISUPPORT information, since
             # IRCClient.getChannelModeParams relies on this value.
-            'CHANMODES': self._parseChanModesParam(['b', '', 'lk', ''])}
+            'CHANMODES': self._parseChanModesParam(['b', '', 'lk'])}
 
 
-    @classmethod
     def _splitParamArgs(cls, params, valueProcessor=None):
         """
         Split ISUPPORT parameter arguments.
@@ -805,7 +692,7 @@ class ServerSupportedFeatures(_CommandDispatcherMixin):
         @type params: C{iterable} of C{str}
 
         @type valueProcessor: C{callable} taking {str}
-        @param valueProcessor: Callable to process argument values, or L{None}
+        @param valueProcessor: Callable to process argument values, or C{None}
             to perform no processing
 
         @rtype: C{list} of C{(str, object)}
@@ -821,9 +708,9 @@ class ServerSupportedFeatures(_CommandDispatcherMixin):
                 a, b = param.split(':', 1)
                 yield a, valueProcessor(b)
         return list(_parse())
+    _splitParamArgs = classmethod(_splitParamArgs)
 
 
-    @classmethod
     def _unescapeParamValue(cls, value):
         """
         Unescape an ISUPPORT parameter.
@@ -848,9 +735,9 @@ class ServerSupportedFeatures(_CommandDispatcherMixin):
         if '\\x' not in value:
             return value
         return ''.join(_unescape())
+    _unescapeParamValue = classmethod(_unescapeParamValue)
 
 
-    @classmethod
     def _splitParam(cls, param):
         """
         Split an ISUPPORT parameter.
@@ -863,10 +750,10 @@ class ServerSupportedFeatures(_CommandDispatcherMixin):
         if '=' not in param:
             param += '='
         key, value = param.split('=', 1)
-        return key, [cls._unescapeParamValue(v) for v in value.split(',')]
+        return key, map(cls._unescapeParamValue, value.split(','))
+    _splitParam = classmethod(_splitParam)
 
 
-    @classmethod
     def _parsePrefixParam(cls, prefix):
         """
         Parse the ISUPPORT "PREFIX" parameter.
@@ -884,12 +771,12 @@ class ServerSupportedFeatures(_CommandDispatcherMixin):
         if prefix[0] != '(' and ')' not in prefix:
             raise ValueError('Malformed PREFIX parameter')
         modes, symbols = prefix.split(')', 1)
-        symbols = zip(symbols, range(len(symbols)))
+        symbols = zip(symbols, xrange(len(symbols)))
         modes = modes[1:]
         return dict(zip(modes, symbols))
+    _parsePrefixParam = classmethod(_parsePrefixParam)
 
 
-    @classmethod
     def _parseChanModesParam(self, params):
         """
         Parse the ISUPPORT "CHANMODES" parameter.
@@ -903,13 +790,14 @@ class ServerSupportedFeatures(_CommandDispatcherMixin):
                     len(names), len(params)))
         items = map(lambda key, value: (key, value or ''), names, params)
         return dict(items)
+    _parseChanModesParam = classmethod(_parseChanModesParam)
 
 
     def getFeature(self, feature, default=None):
         """
         Get a server supported feature's value.
 
-        A feature with the value L{None} is equivalent to the feature being
+        A feature with the value C{None} is equivalent to the feature being
         unsupported.
 
         @type feature: C{str}
@@ -1129,21 +1017,21 @@ class IRCClient(basic.LineReceiver):
      - NickServ cooperation.  (a mix-in?)
 
     @ivar nickname: Nickname the client will use.
-    @ivar password: Password used to log on to the server.  May be L{None}.
+    @ivar password: Password used to log on to the server.  May be C{None}.
     @ivar realname: Supplied to the server during login as the "Real name"
-        or "ircname".  May be L{None}.
+        or "ircname".  May be C{None}.
     @ivar username: Supplied to the server during login as the "User name".
-        May be L{None}
+        May be C{None}
 
-    @ivar userinfo: Sent in reply to a C{USERINFO} CTCP query.  If L{None}, no
+    @ivar userinfo: Sent in reply to a C{USERINFO} CTCP query.  If C{None}, no
         USERINFO reply will be sent.
         "This is used to transmit a string which is settable by
         the user (and never should be set by the client)."
-    @ivar fingerReply: Sent in reply to a C{FINGER} CTCP query.  If L{None}, no
+    @ivar fingerReply: Sent in reply to a C{FINGER} CTCP query.  If C{None}, no
         FINGER reply will be sent.
     @type fingerReply: Callable or String
 
-    @ivar versionName: CTCP VERSION reply, client name.  If L{None}, no VERSION
+    @ivar versionName: CTCP VERSION reply, client name.  If C{None}, no VERSION
         reply will be sent.
     @type versionName: C{str}, or None.
     @ivar versionNum: CTCP VERSION reply, client version.
@@ -1152,10 +1040,10 @@ class IRCClient(basic.LineReceiver):
     @type versionEnv: C{str}, or None.
 
     @ivar sourceURL: CTCP SOURCE reply, a URL where the source code of this
-        client may be found.  If L{None}, no SOURCE reply will be sent.
+        client may be found.  If C{None}, no SOURCE reply will be sent.
 
     @ivar lineRate: Minimum delay between lines sent to the server.  If
-        L{None}, no delay will be imposed.
+        C{None}, no delay will be imposed.
     @type lineRate: Number of Seconds.
 
     @ivar motd: Either L{None} or, between receipt of I{RPL_MOTDSTART} and
@@ -1181,17 +1069,17 @@ class IRCClient(basic.LineReceiver):
 
     @type hostname: C{str}
     @ivar hostname: Host name of the IRC server the client is connected to.
-        Initially the host name is L{None} and later is set to the host name
+        Initially the host name is C{None} and later is set to the host name
         from which the I{RPL_WELCOME} message is received.
 
     @type _heartbeat: L{task.LoopingCall}
     @ivar _heartbeat: Looping call to perform the keepalive by calling
         L{IRCClient._sendHeartbeat} every L{heartbeatInterval} seconds, or
-        L{None} if there is no heartbeat.
+        C{None} if there is no heartbeat.
 
     @type heartbeatInterval: C{float}
     @ivar heartbeatInterval: Interval, in seconds, to send I{PING} messages to
-        the server as a form of keepalive, defaults to 120 seconds. Use L{None}
+        the server as a form of keepalive, defaults to 120 seconds. Use C{None}
         to disable the heartbeat.
     """
     hostname = None
@@ -1222,7 +1110,7 @@ class IRCClient(basic.LineReceiver):
     _queue = None
     _queueEmptying = None
 
-    delimiter = b'\n' # b'\r\n' will also work (see dataReceived)
+    delimiter = '\n' # '\r\n' will also work (see dataReceived)
 
     __pychecker__ = 'unusednames=params,prefix,channel'
 
@@ -1234,12 +1122,16 @@ class IRCClient(basic.LineReceiver):
     heartbeatInterval = 120
 
 
+    def irclower(self, text):
+      try:
+        trans = irclowertranslations[self.supported.getFeature("CASEMAPPING")]
+      except:
+        trans = irclowertranslations["rfc1549"]
+      return text.translate(trans)
+
+
     def _reallySendLine(self, line):
-        quoteLine = lowQuote(line)
-        if isinstance(quoteLine, unicode):
-            quoteLine = quoteLine.encode("utf-8")
-        quoteLine += b'\r'
-        return basic.LineReceiver.sendLine(self, quoteLine)
+        return basic.LineReceiver.sendLine(self, lowQuote(line) + '\r')
 
     def sendLine(self, line):
         if self.lineRate is None:
@@ -1395,7 +1287,7 @@ class IRCClient(basic.LineReceiver):
 
     ### Methods involving me directly
 
-    def privmsg(self, user, channel, message):
+    def privmsg(self, user, channel, message): 
         """
         Called when I have a message from a user to me or a channel.
         """
@@ -1482,7 +1374,7 @@ class IRCClient(basic.LineReceiver):
         """
         Called when my nick has been changed.
         """
-        self.nickname = nick.encode("ascii").decode()
+        self.nickname = nick
 
 
     ### Things I observe other people doing in a channel.
@@ -1741,7 +1633,7 @@ class IRCClient(basic.LineReceiver):
         @type message: C{str}
 
         @param length: Maximum number of octets to send in a single
-            command, including the IRC protocol framing. If L{None} is given
+            command, including the IRC protocol framing. If C{None} is given
             then L{IRCClient._safeMaximumLineLength} is used to determine a
             value.
         @type length: C{int}
@@ -1823,7 +1715,7 @@ class IRCClient(basic.LineReceiver):
             self.sendLine("PASS %s" % self.password)
         self.setNick(nickname)
         if self.username is None:
-            self.username = nickname.encode("ascii").decode()
+            self.username = nickname
         self.sendLine("USER %s %s %s :%s" % (self.username, hostname, servername, self.realname))
 
 
@@ -1876,7 +1768,7 @@ class IRCClient(basic.LineReceiver):
             self._pings = {}
 
         if text is None:
-            chars = string.ascii_letters + string.digits + string.punctuation
+            chars = string.letters + string.digits + string.punctuation
             key = ''.join([random.choice(chars) for i in range(12)])
         else:
             key = str(text)
@@ -1887,8 +1779,8 @@ class IRCClient(basic.LineReceiver):
             # Remove some of the oldest entries.
             byValue = [(v, k) for (k, v) in self._pings.items()]
             byValue.sort()
-            excess = len(self._pings) - self._MAX_PINGRING
-            for i in range(excess):
+            excess = self._MAX_PINGRING - len(self._pings)
+            for i in xrange(excess):
                 del self._pings[byValue[i][1]]
 
 
@@ -1945,7 +1837,7 @@ class IRCClient(basic.LineReceiver):
         @returns: A string that is in some way different from the nickname.
         @rtype: C{str}
         """
-        return (nickname.decode() if type(nickname) is bytes else nickname) + '_'
+        return nickname + '_'
 
 
     def irc_ERR_ERRONEUSNICKNAME(self, prefix, params):
@@ -1976,8 +1868,7 @@ class IRCClient(basic.LineReceiver):
         """
         self.hostname = prefix
         self._registered = True
-        self.nickname = self._attemptedNick.encode("ascii").decode()
-        print("signed on") #debug
+        self.nickname = self._attemptedNick
         self.signedOn()
         self.startHeartbeat()
 
@@ -1991,7 +1882,7 @@ class IRCClient(basic.LineReceiver):
         if nick == self.nickname:
             self.joined(channel)
         else:
-            self.userJoined(nick, channel)
+            self.userJoined(prefix, channel)
 
     def irc_PART(self, prefix, params):
         """
@@ -2002,14 +1893,14 @@ class IRCClient(basic.LineReceiver):
         if nick == self.nickname:
             self.left(channel)
         else:
-            self.userLeft(nick, channel)
+            self.userLeft(prefix, channel)
 
     def irc_QUIT(self, prefix, params):
         """
         Called when a user has quit.
         """
-        nick = prefix.split('!')[0]
-        self.userQuit(nick, params[0])
+        #nick = prefix.split('!')[0]
+        self.userQuit(prefix, params[0])
 
 
     def irc_MODE(self, user, params):
@@ -2033,14 +1924,18 @@ class IRCClient(basic.LineReceiver):
         except IRCBadModes:
             log.err(None, 'An error occurred while parsing the following '
                           'MODE message: MODE %s' % (' '.join(params),))
-        else:
-            if added:
-                modes, params = zip(*added)
-                self.modeChanged(user, channel, True, ''.join(modes), params)
-
-            if removed:
-                modes, params = zip(*removed)
-                self.modeChanged(user, channel, False, ''.join(modes), params)
+        
+        #modification by inhahe
+        self.modeChanged(user, channel, added, removed)
+        
+        #else:
+        #    if added:
+        #        modes, params = zip(*added)
+        #        self.modeChanged(user, channel, True, ''.join(modes), params)
+        #
+        #    if removed:
+        #        modes, params = zip(*removed)
+        #        self.modeChanged(user, channel, False, ''.join(modes), params)
 
 
     def irc_PING(self, prefix, params):
@@ -2053,26 +1948,23 @@ class IRCClient(basic.LineReceiver):
         """
         Called when we get a message.
         """
-        user = prefix
-        channel = params[0]
+        orig = prefix
+        dest = params[0]
         message = params[-1]
 
-        if not message:
-            # Don't raise an exception if we get blank message.
-            return
-
-        if message[0] == X_DELIM:
+        if message.startswith(X_DELIM):
             m = ctcpExtract(message)
             if m['extended']:
-                self.ctcpQuery(user, channel, m['extended'])
-
+                self.ctcpQuery(orig, dest, m['extended'])
             if not m['normal']:
-                return
+                return # wtf?  no subclassed method is called if not (m['extended'] or m['normal'])
+            message = string.join(m['normal'], ' ')
 
-            message = ' '.join(m['normal'])
-
-        self.privmsg(user, channel, message)
-
+        if dest == self.nickname:
+          self.privmsg(orig, message)
+        else:
+          self.chanmsg(orig, dest, message)
+          
     def irc_NOTICE(self, prefix, params):
         """
         Called when a user gets a notice.
@@ -2301,18 +2193,18 @@ class IRCClient(basic.LineReceiver):
         """
         A master index of what CTCP tags this client knows.
 
-        If no arguments are provided, respond with a list of known tags, sorted
-        in alphabetical order.
+        If no arguments are provided, respond with a list of known tags.
         If an argument is provided, provide human-readable help on
         the usage of that tag.
         """
+
         nick = user.split('!')[0]
         if not data:
             # XXX: prefixedMethodNames gets methods from my *class*,
             # but it's entirely possible that this *instance* has more
             # methods.
-            names = sorted(reflect.prefixedMethodNames(self.__class__,
-                                                       'ctcpQuery_'))
+            names = reflect.prefixedMethodNames(self.__class__,
+                                                'ctcpQuery_')
 
             self.ctcpMakeReply(nick, [('CLIENTINFO', ' '.join(names))])
         else:
@@ -2333,7 +2225,7 @@ class IRCClient(basic.LineReceiver):
         # when faced with an ERRMSG query (not a reply).
         nick = user.split('!')[0]
         self.ctcpMakeReply(nick, [('ERRMSG',
-                                   "%s :No error has occurred." % data)])
+                                   "%s :No error has occoured." % data)])
 
     def ctcpQuery_TIME(self, user, channel, data):
         if data is not None:
@@ -2538,7 +2430,7 @@ class IRCClient(basic.LineReceiver):
         Send one or more C{extended messages} as a CTCP reply.
 
         @type messages: a list of extended messages.  An extended
-        message is a (tag, data) tuple, where 'data' may be L{None}.
+        message is a (tag, data) tuple, where 'data' may be C{None}.
         """
         self.notice(user, ctcpStringify(messages))
 
@@ -2549,7 +2441,7 @@ class IRCClient(basic.LineReceiver):
         Send one or more C{extended messages} as a CTCP query.
 
         @type messages: a list of extended messages.  An extended
-        message is a (tag, data) tuple, where 'data' may be L{None}.
+        message is a (tag, data) tuple, where 'data' may be C{None}.
         """
         self.msg(user, ctcpStringify(messages))
 
@@ -2569,9 +2461,9 @@ class IRCClient(basic.LineReceiver):
 
     def ctcpReply_PING(self, user, channel, data):
         nick = user.split('!', 1)[0]
-        if (not self._pings) or ((nick, data) not in self._pings):
-            raise IRCBadMessage(
-                "Bogus PING response from %s: %s" % (user, data))
+        if (not self._pings) or (not self._pings.has_key((nick, data))):
+            raise IRCBadMessage,\
+                  "Bogus PING response from %s: %s" % (user, data)
 
         t0 = self._pings[(nick, data)]
         self.pong(user, time.time() - t0)
@@ -2634,7 +2526,7 @@ class IRCClient(basic.LineReceiver):
         """
         log.msg(s + '\n')
 
-    ### Protocol methods
+    ### Protocool methods
 
     def connectionMade(self):
         self.supported = ServerSupportedFeatures()
@@ -2643,26 +2535,21 @@ class IRCClient(basic.LineReceiver):
             self.register(self.nickname)
 
     def dataReceived(self, data):
-        if isinstance(data, unicode):
-            data = data.encode("utf-8")
-        data = data.replace(b'\r', b'')
-        basic.LineReceiver.dataReceived(self, data)
-
+        basic.LineReceiver.dataReceived(self, data.replace('\r', ''))
 
     def lineReceived(self, line):
-        if bytes != str and isinstance(line, bytes):
-            # decode bytes from transport to unicode
-            line = line.decode("utf-8")
-
         line = lowDequote(line)
         try:
             prefix, command, params = parsemsg(line)
             if command in numeric_to_symbolic:
                 command = numeric_to_symbolic[command]
+                self.ERRorRPLcommand(command, prefix, params)
             self.handleCommand(command, prefix, params)
         except IRCBadMessage:
             self.badMessage(line, *sys.exc_info())
 
+    def ERRorRPLcommand(self, command, prefix, params):
+      pass
 
     def getUserModeParams(self):
         """
@@ -2685,7 +2572,7 @@ class IRCClient(basic.LineReceiver):
         # parameter.
         params = ['', '']
         prefixes = self.supported.getFeature('PREFIX', {})
-        params[0] = params[1] = ''.join(prefixes.keys())
+        params[0] = params[1] = ''.join(prefixes.iterkeys())
 
         chanmodes = self.supported.getFeature('CHANMODES')
         if chanmodes is not None:
@@ -2715,7 +2602,7 @@ class IRCClient(basic.LineReceiver):
         method = getattr(self, "irc_%s" % command, None)
         try:
             if method is not None:
-                method(prefix, params)
+                method(prefix, params)          
             else:
                 self.irc_unknown(prefix, command, params)
         except:
@@ -2734,9 +2621,10 @@ def dccParseAddress(address):
         pass
     else:
         try:
-            address = int(address)
+            address = long(address)
         except ValueError:
-            raise IRCBadMessage("Indecipherable address %r" % (address,))
+            raise IRCBadMessage,\
+                  "Indecipherable address %r" % (address,)
         else:
             address = (
                 (address >> 24) & 0xFF,
@@ -2814,7 +2702,7 @@ class DccSendProtocol(protocol.Protocol, styles.Ephemeral):
     connected = 0
 
     def __init__(self, file):
-        if type(file) is str:
+        if type(file) is types.StringType:
             self.file = open(file, 'r')
 
     def connectionMade(self):
@@ -2930,7 +2818,7 @@ class DccChat(basic.LineReceiver, styles.Ephemeral):
     delimiter = CR + NL
     client = None
     remoteParty = None
-    buffer = b""
+    buffer = ""
 
     def __init__(self, client, queryData=None):
         """
@@ -2942,7 +2830,7 @@ class DccChat(basic.LineReceiver, styles.Ephemeral):
 
         (To be honest, fromUser is the only thing that's currently
         used here. targetUserOrChannel is potentially useful, while
-        the 'data' argument is solely for informational purposes.)
+        the 'data' argument is soley for informational purposes.)
         """
         self.client = client
         if queryData:
@@ -3010,7 +2898,7 @@ def dccDescribe(data):
         pass
     else:
         try:
-            address = int(address)
+            address = long(address)
         except ValueError:
             pass
         else:
@@ -3410,10 +3298,10 @@ class _FormattingParser(_CommandDispatcherMixin):
         calling L{emit}.
 
     @type foreground: L{_ForegroundColorAttr}
-    @ivar foreground: Current foreground color attribute, or L{None}.
+    @ivar foreground: Current foreground color attribute, or C{None}.
 
     @type background: L{_BackgroundColorAttr}
-    @ivar background: Current background color attribute, or L{None}.
+    @ivar background: Current background color attribute, or C{None}.
 
     @ivar _result: Current parse result.
     """
@@ -3636,7 +3524,7 @@ def assembleFormattedText(formatted):
 
     @rtype: C{str}
     @return: String containing mIRC control sequences that mimic those
-        specified by I{formatted}.
+        specified by L{formatted}.
 
     @since: 13.1
     """
@@ -3665,7 +3553,7 @@ def stripFormatting(text):
 
 # CTCP constants and helper functions
 
-X_DELIM = chr(0o01)
+X_DELIM = chr(001)
 
 def ctcpExtract(message):
     """
@@ -3695,7 +3583,7 @@ def ctcpExtract(message):
     normal_messages[:] = filter(None, normal_messages)
 
     extended_messages[:] = map(ctcpDequote, extended_messages)
-    for i in range(len(extended_messages)):
+    for i in xrange(len(extended_messages)):
         m = extended_messages[i].split(SPC, 1)
         tag = m[0]
         if len(m) > 1:
@@ -3709,7 +3597,7 @@ def ctcpExtract(message):
 
 # CTCP escaping
 
-M_QUOTE= chr(0o20)
+M_QUOTE= chr(020)
 
 mQuoteTable = {
     NUL: M_QUOTE + '0',
@@ -3774,7 +3662,7 @@ def ctcpDequote(s):
 def ctcpStringify(messages):
     """
     @type messages: a list of extended messages.  An extended
-    message is a (tag, data) tuple, where 'data' may be L{None}, a
+    message is a (tag, data) tuple, where 'data' may be C{None}, a
     string, or a list of strings to be joined with whitespace.
 
     @returns: String
@@ -3782,7 +3670,7 @@ def ctcpStringify(messages):
     coded_messages = []
     for (tag, data) in messages:
         if data:
-            if not isinstance(data, str):
+            if not isinstance(data, types.StringType):
                 try:
                     # data as list-of-strings
                     data = " ".join(map(str, data))
@@ -3882,8 +3770,8 @@ RPL_LUSERUNKNOWN = '253'
 RPL_LUSERCHANNELS = '254'
 RPL_LUSERME = '255'
 RPL_ADMINME = '256'
-RPL_ADMINLOC1 = '257'
-RPL_ADMINLOC2 = '258'
+RPL_ADMINLOC = '257'
+RPL_ADMINLOC = '258'
 RPL_ADMINEMAIL = '259'
 RPL_TRYAGAIN = '263'
 ERR_NOSUCHNICK = '401'
@@ -3900,9 +3788,6 @@ ERR_NOTEXTTOSEND = '412'
 ERR_NOTOPLEVEL = '413'
 ERR_WILDTOPLEVEL = '414'
 ERR_BADMASK = '415'
-# Defined in errata.
-# https://www.rfc-editor.org/errata_search.php?rfc=2812&eid=2822
-ERR_TOOMANYMATCHES = '416'
 ERR_UNKNOWNCOMMAND = '421'
 ERR_NOMOTD = '422'
 ERR_NOADMININFO = '423'
@@ -4027,8 +3912,8 @@ symbolic_to_numeric = {
     "RPL_LUSERCHANNELS": '254',
     "RPL_LUSERME": '255',
     "RPL_ADMINME": '256',
-    "RPL_ADMINLOC1": '257',
-    "RPL_ADMINLOC2": '258',
+    "RPL_ADMINLOC": '257',
+    "RPL_ADMINLOC": '258',
     "RPL_ADMINEMAIL": '259',
     "RPL_TRYAGAIN": '263',
     "ERR_NOSUCHNICK": '401',
@@ -4045,7 +3930,6 @@ symbolic_to_numeric = {
     "ERR_NOTOPLEVEL": '413',
     "ERR_WILDTOPLEVEL": '414',
     "ERR_BADMASK": '415',
-    "ERR_TOOMANYMATCHES": '416',
     "ERR_UNKNOWNCOMMAND": '421',
     "ERR_NOMOTD": '422',
     "ERR_NOADMININFO": '423',

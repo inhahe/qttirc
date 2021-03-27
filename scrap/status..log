@@ -1,0 +1,491 @@
+* Connection to (localhost, 6667) failed. Connecting to (localhost, 6667)...* Connection to (localhost, 6667) failed. Connecting to (localhost, 6667)...
+* Connection to (localhost, 6667) failed. Connecting to (localhost, 6667)...* Connection to (localhost, 6667) failed. Connecting to (localhost, 6667)...
+* Connection to (localhost, 6667) failed. Connecting to (localhost, 6667)...* Connection to (localhost, 6667) failed. Connecting to (localhost, 6667)...
+* Connection to (localhost, 6667) failed. Connecting to (localhost, 6667)...* Connection to (localhost, 6667) failed. Connecting to (localhost, 6667)...
+* Connection to (localhost, 6667) failed. Connecting to (localhost, 6667)...* Connection to (localhost, 6667) failed. Connecting to (localhost, 6667)...
+* Connection to (localhost, 6667) failed. Connecting to (localhost, 6667)...* Connection to (localhost, 6667) failed. Connecting to (localhost, 6667)...
+* Disconnected. Reconnecting...* Disconnected. Reconnecting...
+*** Looking up your hostname...*** Looking up your hostname...
+*** Found your hostname*** Found your hostname
+
+Welcome to the Exalumen IRC Network inhahe_!inhahe@localhostWelcome to the Exalumen IRC Network inhahe_!inhahe@localhost
+Your host is local.inhahe.com, running version UnrealIRCd-4.0.18Your host is local.inhahe.com, running version UnrealIRCd-4.0.18
+This server was created Sat Jun 23 16:12:43 2018This server was created Sat Jun 23 16:12:43 2018
+local.inhahe.com UnrealIRCd-4.0.18 iowrsxzdHtIDZRqpWGTSB lvhopsmntikraqbeIzMQNRTOVKDdGLPZSCcflocal.inhahe.com UnrealIRCd-4.0.18 iowrsxzdHtIDZRqpWGTSB lvhopsmntikraqbeIzMQNRTOVKDdGLPZSCcf
+UHNAMES NAMESX SAFELIST HCN MAXCHANNELS=500 CHANLIMIT=#:500 MAXLIST=b:60,e:60,I:60 MAXNICKLEN=30 NICKLEN=30 CHANNELLEN=32 TOPICLEN=307 KICKLEN=307 AWAYLEN=307 are supported by this serverUHNAMES NAMESX SAFELIST HCN MAXCHANNELS=500 CHANLIMIT=#:500 MAXLIST=b:60,e:60,I:60 MAXNICKLEN=30 NICKLEN=30 CHANNELLEN=32 TOPICLEN=307 KICKLEN=307 AWAYLEN=307 are supported by this server
+MAXTARGETS=20 WALLCHOPS WATCH=128 WATCHOPTS=A SILENCE=15 MODES=12 CHANTYPES=# PREFIX=(qaohv)~&@%+ CHANMODES=beI,kLf,l,psmntirzMQNRTOVKDdGPZSCc NETWORK=Exalumen CASEMAPPING=ascii EXTBAN=~,SOcaRrnqj ELIST=MNUCT are supported by this serverMAXTARGETS=20 WALLCHOPS WATCH=128 WATCHOPTS=A SILENCE=15 MODES=12 CHANTYPES=# PREFIX=(qaohv)~&@%+ CHANMODES=beI,kLf,l,psmntirzMQNRTOVKDdGPZSCc NETWORK=Exalumen CASEMAPPING=ascii EXTBAN=~,SOcaRrnqj ELIST=MNUCT are supported by this server
+STATUSMSG=~&@%+ EXCEPTS INVEX CMDS=USERIP,STARTTLS,KNOCK,DCCALLOW,MAP are supported by this serverSTATUSMSG=~&@%+ EXCEPTS INVEX CMDS=USERIP,STARTTLS,KNOCK,DCCALLOW,MAP are supported by this server
+Clk-5CED2D9C is now your displayed hostClk-5CED2D9C is now your displayed host
+There are 1 users and 0 invisible on 1 serversThere are 1 users and 0 invisible on 1 servers
+I have 1 clients and 0 serversI have 1 clients and 0 servers
+1 2 Current local users 1, max 21 2 Current local users 1, max 2
+1 1 Current global users 1, max 11 1 Current global users 1, max 1
+- local.inhahe.com Message of the Day - - local.inhahe.com Message of the Day - 
+- 27/9/2019 9:45- 27/9/2019 9:45
+- Inhahe's private IRC server for testing his IRC client. Chances are you shouldn't be here.- Inhahe's private IRC server for testing his IRC client. Chances are you shouldn't be here.
+- - 
+- Rules:- Rules:
+- * Don't be a dickhead.- * Don't be a dickhead.
+- - 
+End of /MOTD command.End of /MOTD command.
++iwx+iwx
+* inhahe_ sets mode(s): +i, +w, +x* inhahe_ sets mode(s): +i, +w, +x
+
+= #test @inhahe_ = #test @inhahe_ 
+#test End of /NAMES list.#test End of /NAMES list.
+
+= #test2 @inhahe_ = #test2 @inhahe_ 
+#test2 End of /NAMES list.#test2 End of /NAMES list.
+* Disconnected. Reconnecting...* Disconnected. Reconnecting...
+*** Looking up your hostname...*** Looking up your hostname...
+*** Found your hostname*** Found your hostname
+
+Welcome to the Exalumen IRC Network inhahe_!inhahe@localhostWelcome to the Exalumen IRC Network inhahe_!inhahe@localhost
+* You are now signed on.* You are now signed on.
+Your host is local.inhahe.com, running version UnrealIRCd-4.0.18Your host is local.inhahe.com, running version UnrealIRCd-4.0.18
+This server was created Sat Jun 23 16:12:43 2018This server was created Sat Jun 23 16:12:43 2018
+local.inhahe.com UnrealIRCd-4.0.18 iowrsxzdHtIDZRqpWGTSB lvhopsmntikraqbeIzMQNRTOVKDdGLPZSCcflocal.inhahe.com UnrealIRCd-4.0.18 iowrsxzdHtIDZRqpWGTSB lvhopsmntikraqbeIzMQNRTOVKDdGLPZSCcf
+UHNAMES NAMESX SAFELIST HCN MAXCHANNELS=500 CHANLIMIT=#:500 MAXLIST=b:60,e:60,I:60 MAXNICKLEN=30 NICKLEN=30 CHANNELLEN=32 TOPICLEN=307 KICKLEN=307 AWAYLEN=307 are supported by this serverUHNAMES NAMESX SAFELIST HCN MAXCHANNELS=500 CHANLIMIT=#:500 MAXLIST=b:60,e:60,I:60 MAXNICKLEN=30 NICKLEN=30 CHANNELLEN=32 TOPICLEN=307 KICKLEN=307 AWAYLEN=307 are supported by this server
+MAXTARGETS=20 WALLCHOPS WATCH=128 WATCHOPTS=A SILENCE=15 MODES=12 CHANTYPES=# PREFIX=(qaohv)~&@%+ CHANMODES=beI,kLf,l,psmntirzMQNRTOVKDdGPZSCc NETWORK=Exalumen CASEMAPPING=ascii EXTBAN=~,SOcaRrnqj ELIST=MNUCT are supported by this serverMAXTARGETS=20 WALLCHOPS WATCH=128 WATCHOPTS=A SILENCE=15 MODES=12 CHANTYPES=# PREFIX=(qaohv)~&@%+ CHANMODES=beI,kLf,l,psmntirzMQNRTOVKDdGPZSCc NETWORK=Exalumen CASEMAPPING=ascii EXTBAN=~,SOcaRrnqj ELIST=MNUCT are supported by this server
+STATUSMSG=~&@%+ EXCEPTS INVEX CMDS=USERIP,STARTTLS,KNOCK,DCCALLOW,MAP are supported by this serverSTATUSMSG=~&@%+ EXCEPTS INVEX CMDS=USERIP,STARTTLS,KNOCK,DCCALLOW,MAP are supported by this server
+Clk-5CED2D9C is now your displayed hostClk-5CED2D9C is now your displayed host
+There are 1 users and 0 invisible on 1 serversThere are 1 users and 0 invisible on 1 servers
+I have 1 clients and 0 serversI have 1 clients and 0 servers
+1 2 Current local users 1, max 21 2 Current local users 1, max 2
+1 1 Current global users 1, max 11 1 Current global users 1, max 1
+- local.inhahe.com Message of the Day - - local.inhahe.com Message of the Day - 
+- 27/9/2019 9:45- 27/9/2019 9:45
+- Inhahe's private IRC server for testing his IRC client. Chances are you shouldn't be here.- Inhahe's private IRC server for testing his IRC client. Chances are you shouldn't be here.
+- - 
+- Rules:- Rules:
+- * Don't be a dickhead.- * Don't be a dickhead.
+- - 
+End of /MOTD command.End of /MOTD command.
++iwx+iwx
+* inhahe_ sets mode(s): +i, +w, +x* inhahe_ sets mode(s): +i, +w, +x
+
+= #test @inhahe_ = #test @inhahe_ 
+#test End of /NAMES list.#test End of /NAMES list.
+
+= #test2 @inhahe_ = #test2 @inhahe_ 
+#test2 End of /NAMES list.#test2 End of /NAMES list.
+* Disconnected. Reconnecting...* Disconnected. Reconnecting...
+*** Looking up your hostname...*** Looking up your hostname...
+*** Found your hostname (cached)*** Found your hostname (cached)
+
+Welcome to the Exalumen IRC Network inhahe_!inhahe@localhostWelcome to the Exalumen IRC Network inhahe_!inhahe@localhost
+* You are now signed on.* You are now signed on.
+Your host is local.inhahe.com, running version UnrealIRCd-4.0.18Your host is local.inhahe.com, running version UnrealIRCd-4.0.18
+This server was created Sat Jun 23 16:12:43 2018This server was created Sat Jun 23 16:12:43 2018
+local.inhahe.com UnrealIRCd-4.0.18 iowrsxzdHtIDZRqpWGTSB lvhopsmntikraqbeIzMQNRTOVKDdGLPZSCcflocal.inhahe.com UnrealIRCd-4.0.18 iowrsxzdHtIDZRqpWGTSB lvhopsmntikraqbeIzMQNRTOVKDdGLPZSCcf
+UHNAMES NAMESX SAFELIST HCN MAXCHANNELS=500 CHANLIMIT=#:500 MAXLIST=b:60,e:60,I:60 MAXNICKLEN=30 NICKLEN=30 CHANNELLEN=32 TOPICLEN=307 KICKLEN=307 AWAYLEN=307 are supported by this serverUHNAMES NAMESX SAFELIST HCN MAXCHANNELS=500 CHANLIMIT=#:500 MAXLIST=b:60,e:60,I:60 MAXNICKLEN=30 NICKLEN=30 CHANNELLEN=32 TOPICLEN=307 KICKLEN=307 AWAYLEN=307 are supported by this server
+MAXTARGETS=20 WALLCHOPS WATCH=128 WATCHOPTS=A SILENCE=15 MODES=12 CHANTYPES=# PREFIX=(qaohv)~&@%+ CHANMODES=beI,kLf,l,psmntirzMQNRTOVKDdGPZSCc NETWORK=Exalumen CASEMAPPING=ascii EXTBAN=~,SOcaRrnqj ELIST=MNUCT are supported by this serverMAXTARGETS=20 WALLCHOPS WATCH=128 WATCHOPTS=A SILENCE=15 MODES=12 CHANTYPES=# PREFIX=(qaohv)~&@%+ CHANMODES=beI,kLf,l,psmntirzMQNRTOVKDdGPZSCc NETWORK=Exalumen CASEMAPPING=ascii EXTBAN=~,SOcaRrnqj ELIST=MNUCT are supported by this server
+STATUSMSG=~&@%+ EXCEPTS INVEX CMDS=USERIP,STARTTLS,KNOCK,DCCALLOW,MAP are supported by this serverSTATUSMSG=~&@%+ EXCEPTS INVEX CMDS=USERIP,STARTTLS,KNOCK,DCCALLOW,MAP are supported by this server
+Clk-5CED2D9C is now your displayed hostClk-5CED2D9C is now your displayed host
+There are 1 users and 0 invisible on 1 serversThere are 1 users and 0 invisible on 1 servers
+I have 1 clients and 0 serversI have 1 clients and 0 servers
+1 2 Current local users 1, max 21 2 Current local users 1, max 2
+1 1 Current global users 1, max 11 1 Current global users 1, max 1
+- local.inhahe.com Message of the Day - - local.inhahe.com Message of the Day - 
+- 27/9/2019 9:45- 27/9/2019 9:45
+- Inhahe's private IRC server for testing his IRC client. Chances are you shouldn't be here.- Inhahe's private IRC server for testing his IRC client. Chances are you shouldn't be here.
+- - 
+- Rules:- Rules:
+- * Don't be a dickhead.- * Don't be a dickhead.
+- - 
+End of /MOTD command.End of /MOTD command.
++iwx+iwx
+* inhahe_ sets mode(s): +i, +w, +x* inhahe_ sets mode(s): +i, +w, +x
+
+= #test @inhahe_ = #test @inhahe_ 
+#test End of /NAMES list.#test End of /NAMES list.
+
+= #test2 @inhahe_ = #test2 @inhahe_ 
+#test2 End of /NAMES list.#test2 End of /NAMES list.
+* Disconnected. Reconnecting...* Disconnected. Reconnecting...
+*** Looking up your hostname...*** Looking up your hostname...
+*** Found your hostname (cached)*** Found your hostname (cached)
+
+Welcome to the Exalumen IRC Network inhahe_!inhahe@localhostWelcome to the Exalumen IRC Network inhahe_!inhahe@localhost
+* You are now signed on.* You are now signed on.
+Your host is local.inhahe.com, running version UnrealIRCd-4.0.18Your host is local.inhahe.com, running version UnrealIRCd-4.0.18
+This server was created Sat Jun 23 16:12:43 2018This server was created Sat Jun 23 16:12:43 2018
+local.inhahe.com UnrealIRCd-4.0.18 iowrsxzdHtIDZRqpWGTSB lvhopsmntikraqbeIzMQNRTOVKDdGLPZSCcflocal.inhahe.com UnrealIRCd-4.0.18 iowrsxzdHtIDZRqpWGTSB lvhopsmntikraqbeIzMQNRTOVKDdGLPZSCcf
+UHNAMES NAMESX SAFELIST HCN MAXCHANNELS=500 CHANLIMIT=#:500 MAXLIST=b:60,e:60,I:60 MAXNICKLEN=30 NICKLEN=30 CHANNELLEN=32 TOPICLEN=307 KICKLEN=307 AWAYLEN=307 are supported by this serverUHNAMES NAMESX SAFELIST HCN MAXCHANNELS=500 CHANLIMIT=#:500 MAXLIST=b:60,e:60,I:60 MAXNICKLEN=30 NICKLEN=30 CHANNELLEN=32 TOPICLEN=307 KICKLEN=307 AWAYLEN=307 are supported by this server
+MAXTARGETS=20 WALLCHOPS WATCH=128 WATCHOPTS=A SILENCE=15 MODES=12 CHANTYPES=# PREFIX=(qaohv)~&@%+ CHANMODES=beI,kLf,l,psmntirzMQNRTOVKDdGPZSCc NETWORK=Exalumen CASEMAPPING=ascii EXTBAN=~,SOcaRrnqj ELIST=MNUCT are supported by this serverMAXTARGETS=20 WALLCHOPS WATCH=128 WATCHOPTS=A SILENCE=15 MODES=12 CHANTYPES=# PREFIX=(qaohv)~&@%+ CHANMODES=beI,kLf,l,psmntirzMQNRTOVKDdGPZSCc NETWORK=Exalumen CASEMAPPING=ascii EXTBAN=~,SOcaRrnqj ELIST=MNUCT are supported by this server
+STATUSMSG=~&@%+ EXCEPTS INVEX CMDS=USERIP,STARTTLS,KNOCK,DCCALLOW,MAP are supported by this serverSTATUSMSG=~&@%+ EXCEPTS INVEX CMDS=USERIP,STARTTLS,KNOCK,DCCALLOW,MAP are supported by this server
+Clk-5CED2D9C is now your displayed hostClk-5CED2D9C is now your displayed host
+There are 1 users and 0 invisible on 1 serversThere are 1 users and 0 invisible on 1 servers
+I have 1 clients and 0 serversI have 1 clients and 0 servers
+1 2 Current local users 1, max 21 2 Current local users 1, max 2
+1 1 Current global users 1, max 11 1 Current global users 1, max 1
+- local.inhahe.com Message of the Day - - local.inhahe.com Message of the Day - 
+- 27/9/2019 9:45- 27/9/2019 9:45
+- Inhahe's private IRC server for testing his IRC client. Chances are you shouldn't be here.- Inhahe's private IRC server for testing his IRC client. Chances are you shouldn't be here.
+- - 
+- Rules:- Rules:
+- * Don't be a dickhead.- * Don't be a dickhead.
+- - 
+End of /MOTD command.End of /MOTD command.
++iwx+iwx
+* inhahe_ sets mode(s): +i, +w, +x* inhahe_ sets mode(s): +i, +w, +x
+
+= #test @inhahe_ = #test @inhahe_ 
+#test End of /NAMES list.#test End of /NAMES list.
+
+= #test2 @inhahe_ = #test2 @inhahe_ 
+#test2 End of /NAMES list.#test2 End of /NAMES list.
+
+
+* Disconnected. Reconnecting...* Disconnected. Reconnecting...
+*** Looking up your hostname...*** Looking up your hostname...
+*** Found your hostname*** Found your hostname
+
+Welcome to the Exalumen IRC Network inhahe_!inhahe@localhostWelcome to the Exalumen IRC Network inhahe_!inhahe@localhost
+* You are now signed on.* You are now signed on.
+Your host is local.inhahe.com, running version UnrealIRCd-4.0.18Your host is local.inhahe.com, running version UnrealIRCd-4.0.18
+This server was created Sat Jun 23 16:12:43 2018This server was created Sat Jun 23 16:12:43 2018
+local.inhahe.com UnrealIRCd-4.0.18 iowrsxzdHtIDZRqpWGTSB lvhopsmntikraqbeIzMQNRTOVKDdGLPZSCcflocal.inhahe.com UnrealIRCd-4.0.18 iowrsxzdHtIDZRqpWGTSB lvhopsmntikraqbeIzMQNRTOVKDdGLPZSCcf
+UHNAMES NAMESX SAFELIST HCN MAXCHANNELS=500 CHANLIMIT=#:500 MAXLIST=b:60,e:60,I:60 MAXNICKLEN=30 NICKLEN=30 CHANNELLEN=32 TOPICLEN=307 KICKLEN=307 AWAYLEN=307 are supported by this serverUHNAMES NAMESX SAFELIST HCN MAXCHANNELS=500 CHANLIMIT=#:500 MAXLIST=b:60,e:60,I:60 MAXNICKLEN=30 NICKLEN=30 CHANNELLEN=32 TOPICLEN=307 KICKLEN=307 AWAYLEN=307 are supported by this server
+MAXTARGETS=20 WALLCHOPS WATCH=128 WATCHOPTS=A SILENCE=15 MODES=12 CHANTYPES=# PREFIX=(qaohv)~&@%+ CHANMODES=beI,kLf,l,psmntirzMQNRTOVKDdGPZSCc NETWORK=Exalumen CASEMAPPING=ascii EXTBAN=~,SOcaRrnqj ELIST=MNUCT are supported by this serverMAXTARGETS=20 WALLCHOPS WATCH=128 WATCHOPTS=A SILENCE=15 MODES=12 CHANTYPES=# PREFIX=(qaohv)~&@%+ CHANMODES=beI,kLf,l,psmntirzMQNRTOVKDdGPZSCc NETWORK=Exalumen CASEMAPPING=ascii EXTBAN=~,SOcaRrnqj ELIST=MNUCT are supported by this server
+STATUSMSG=~&@%+ EXCEPTS INVEX CMDS=USERIP,STARTTLS,KNOCK,DCCALLOW,MAP are supported by this serverSTATUSMSG=~&@%+ EXCEPTS INVEX CMDS=USERIP,STARTTLS,KNOCK,DCCALLOW,MAP are supported by this server
+Clk-5CED2D9C is now your displayed hostClk-5CED2D9C is now your displayed host
+There are 1 users and 1 invisible on 1 serversThere are 1 users and 1 invisible on 1 servers
+1 channels formed1 channels formed
+I have 2 clients and 0 serversI have 2 clients and 0 servers
+2 2 Current local users 2, max 22 2 Current local users 2, max 2
+2 2 Current global users 2, max 22 2 Current global users 2, max 2
+- local.inhahe.com Message of the Day - - local.inhahe.com Message of the Day - 
+- 27/9/2019 9:45- 27/9/2019 9:45
+- Inhahe's private IRC server for testing his IRC client. Chances are you shouldn't be here.- Inhahe's private IRC server for testing his IRC client. Chances are you shouldn't be here.
+- - 
+- Rules:- Rules:
+- * Don't be a dickhead.- * Don't be a dickhead.
+- - 
+End of /MOTD command.End of /MOTD command.
++iwx+iwx
+* inhahe_ sets mode(s): +i, +w, +x* inhahe_ sets mode(s): +i, +w, +x
+
+= #test inhahe_ inhahe = #test inhahe_ inhahe 
+#test End of /NAMES list.#test End of /NAMES list.
+
+= #test2 @inhahe_ = #test2 @inhahe_ 
+#test2 End of /NAMES list.#test2 End of /NAMES list.
+
+local.inhahe.comlocal.inhahe.com
+
+10¿10¿
+local.inhahe.comlocal.inhahe.com
+10this is a testʇsǝʇ ɐ sı sıɥʇ10this is a testʇsǝʇ ɐ sı sıɥʇ
+
+local.inhahe.comlocal.inhahe.com
+
+local.inhahe.comlocal.inhahe.com
+
+local.inhahe.comlocal.inhahe.com
+* Disconnected. Reconnecting...* Disconnected. Reconnecting...
+*** Looking up your hostname...*** Looking up your hostname...
+*** Found your hostname*** Found your hostname
+
+Welcome to the Exalumen IRC Network inhahe_!inhahe@localhostWelcome to the Exalumen IRC Network inhahe_!inhahe@localhost
+* You are now signed on.* You are now signed on.
+Your host is local.inhahe.com, running version UnrealIRCd-4.0.18Your host is local.inhahe.com, running version UnrealIRCd-4.0.18
+This server was created Sat Jun 23 16:12:43 2018This server was created Sat Jun 23 16:12:43 2018
+local.inhahe.com UnrealIRCd-4.0.18 iowrsxzdHtIDZRqpWGTSB lvhopsmntikraqbeIzMQNRTOVKDdGLPZSCcflocal.inhahe.com UnrealIRCd-4.0.18 iowrsxzdHtIDZRqpWGTSB lvhopsmntikraqbeIzMQNRTOVKDdGLPZSCcf
+UHNAMES NAMESX SAFELIST HCN MAXCHANNELS=500 CHANLIMIT=#:500 MAXLIST=b:60,e:60,I:60 MAXNICKLEN=30 NICKLEN=30 CHANNELLEN=32 TOPICLEN=307 KICKLEN=307 AWAYLEN=307 are supported by this serverUHNAMES NAMESX SAFELIST HCN MAXCHANNELS=500 CHANLIMIT=#:500 MAXLIST=b:60,e:60,I:60 MAXNICKLEN=30 NICKLEN=30 CHANNELLEN=32 TOPICLEN=307 KICKLEN=307 AWAYLEN=307 are supported by this server
+MAXTARGETS=20 WALLCHOPS WATCH=128 WATCHOPTS=A SILENCE=15 MODES=12 CHANTYPES=# PREFIX=(qaohv)~&@%+ CHANMODES=beI,kLf,l,psmntirzMQNRTOVKDdGPZSCc NETWORK=Exalumen CASEMAPPING=ascii EXTBAN=~,SOcaRrnqj ELIST=MNUCT are supported by this serverMAXTARGETS=20 WALLCHOPS WATCH=128 WATCHOPTS=A SILENCE=15 MODES=12 CHANTYPES=# PREFIX=(qaohv)~&@%+ CHANMODES=beI,kLf,l,psmntirzMQNRTOVKDdGPZSCc NETWORK=Exalumen CASEMAPPING=ascii EXTBAN=~,SOcaRrnqj ELIST=MNUCT are supported by this server
+STATUSMSG=~&@%+ EXCEPTS INVEX CMDS=USERIP,STARTTLS,KNOCK,DCCALLOW,MAP are supported by this serverSTATUSMSG=~&@%+ EXCEPTS INVEX CMDS=USERIP,STARTTLS,KNOCK,DCCALLOW,MAP are supported by this server
+Clk-5CED2D9C is now your displayed hostClk-5CED2D9C is now your displayed host
+There are 1 users and 1 invisible on 1 serversThere are 1 users and 1 invisible on 1 servers
+1 channels formed1 channels formed
+I have 2 clients and 0 serversI have 2 clients and 0 servers
+2 2 Current local users 2, max 22 2 Current local users 2, max 2
+2 2 Current global users 2, max 22 2 Current global users 2, max 2
+- local.inhahe.com Message of the Day - - local.inhahe.com Message of the Day - 
+- 27/9/2019 9:45- 27/9/2019 9:45
+- Inhahe's private IRC server for testing his IRC client. Chances are you shouldn't be here.- Inhahe's private IRC server for testing his IRC client. Chances are you shouldn't be here.
+- - 
+- Rules:- Rules:
+- * Don't be a dickhead.- * Don't be a dickhead.
+- - 
+End of /MOTD command.End of /MOTD command.
++iwx+iwx
+* inhahe_ sets mode(s): +i, +w, +x* inhahe_ sets mode(s): +i, +w, +x
+
+= #test inhahe_ inhahe = #test inhahe_ inhahe 
+#test End of /NAMES list.#test End of /NAMES list.
+
+= #test2 @inhahe_ = #test2 @inhahe_ 
+#test2 End of /NAMES list.#test2 End of /NAMES list.
+* Disconnected. Reconnecting...* Disconnected. Reconnecting...
+*** Looking up your hostname...*** Looking up your hostname...
+*** Found your hostname (cached)*** Found your hostname (cached)
+
+Welcome to the Exalumen IRC Network inhahe_!inhahe@localhostWelcome to the Exalumen IRC Network inhahe_!inhahe@localhost
+* You are now signed on.* You are now signed on.
+Your host is local.inhahe.com, running version UnrealIRCd-4.0.18Your host is local.inhahe.com, running version UnrealIRCd-4.0.18
+This server was created Sat Jun 23 16:12:43 2018This server was created Sat Jun 23 16:12:43 2018
+local.inhahe.com UnrealIRCd-4.0.18 iowrsxzdHtIDZRqpWGTSB lvhopsmntikraqbeIzMQNRTOVKDdGLPZSCcflocal.inhahe.com UnrealIRCd-4.0.18 iowrsxzdHtIDZRqpWGTSB lvhopsmntikraqbeIzMQNRTOVKDdGLPZSCcf
+UHNAMES NAMESX SAFELIST HCN MAXCHANNELS=500 CHANLIMIT=#:500 MAXLIST=b:60,e:60,I:60 MAXNICKLEN=30 NICKLEN=30 CHANNELLEN=32 TOPICLEN=307 KICKLEN=307 AWAYLEN=307 are supported by this serverUHNAMES NAMESX SAFELIST HCN MAXCHANNELS=500 CHANLIMIT=#:500 MAXLIST=b:60,e:60,I:60 MAXNICKLEN=30 NICKLEN=30 CHANNELLEN=32 TOPICLEN=307 KICKLEN=307 AWAYLEN=307 are supported by this server
+MAXTARGETS=20 WALLCHOPS WATCH=128 WATCHOPTS=A SILENCE=15 MODES=12 CHANTYPES=# PREFIX=(qaohv)~&@%+ CHANMODES=beI,kLf,l,psmntirzMQNRTOVKDdGPZSCc NETWORK=Exalumen CASEMAPPING=ascii EXTBAN=~,SOcaRrnqj ELIST=MNUCT are supported by this serverMAXTARGETS=20 WALLCHOPS WATCH=128 WATCHOPTS=A SILENCE=15 MODES=12 CHANTYPES=# PREFIX=(qaohv)~&@%+ CHANMODES=beI,kLf,l,psmntirzMQNRTOVKDdGPZSCc NETWORK=Exalumen CASEMAPPING=ascii EXTBAN=~,SOcaRrnqj ELIST=MNUCT are supported by this server
+STATUSMSG=~&@%+ EXCEPTS INVEX CMDS=USERIP,STARTTLS,KNOCK,DCCALLOW,MAP are supported by this serverSTATUSMSG=~&@%+ EXCEPTS INVEX CMDS=USERIP,STARTTLS,KNOCK,DCCALLOW,MAP are supported by this server
+Clk-5CED2D9C is now your displayed hostClk-5CED2D9C is now your displayed host
+There are 1 users and 1 invisible on 1 serversThere are 1 users and 1 invisible on 1 servers
+1 channels formed1 channels formed
+I have 2 clients and 0 serversI have 2 clients and 0 servers
+2 2 Current local users 2, max 22 2 Current local users 2, max 2
+2 2 Current global users 2, max 22 2 Current global users 2, max 2
+- local.inhahe.com Message of the Day - - local.inhahe.com Message of the Day - 
+- 27/9/2019 9:45- 27/9/2019 9:45
+- Inhahe's private IRC server for testing his IRC client. Chances are you shouldn't be here.- Inhahe's private IRC server for testing his IRC client. Chances are you shouldn't be here.
+- - 
+- Rules:- Rules:
+- * Don't be a dickhead.- * Don't be a dickhead.
+- - 
+End of /MOTD command.End of /MOTD command.
++iwx+iwx
+* inhahe_ sets mode(s): +i, +w, +x* inhahe_ sets mode(s): +i, +w, +x
+
+= #test inhahe_ inhahe = #test inhahe_ inhahe 
+#test End of /NAMES list.#test End of /NAMES list.
+
+= #test2 @inhahe_ = #test2 @inhahe_ 
+#test2 End of /NAMES list.#test2 End of /NAMES list.
+
+* Disconnected. Reconnecting...* Disconnected. Reconnecting...
+*** Looking up your hostname...*** Looking up your hostname...
+*** Found your hostname (cached)*** Found your hostname (cached)
+
+Welcome to the Exalumen IRC Network inhahe_!inhahe@localhostWelcome to the Exalumen IRC Network inhahe_!inhahe@localhost
+* You are now signed on.* You are now signed on.
+Your host is local.inhahe.com, running version UnrealIRCd-4.0.18Your host is local.inhahe.com, running version UnrealIRCd-4.0.18
+This server was created Sat Jun 23 16:12:43 2018This server was created Sat Jun 23 16:12:43 2018
+local.inhahe.com UnrealIRCd-4.0.18 iowrsxzdHtIDZRqpWGTSB lvhopsmntikraqbeIzMQNRTOVKDdGLPZSCcflocal.inhahe.com UnrealIRCd-4.0.18 iowrsxzdHtIDZRqpWGTSB lvhopsmntikraqbeIzMQNRTOVKDdGLPZSCcf
+UHNAMES NAMESX SAFELIST HCN MAXCHANNELS=500 CHANLIMIT=#:500 MAXLIST=b:60,e:60,I:60 MAXNICKLEN=30 NICKLEN=30 CHANNELLEN=32 TOPICLEN=307 KICKLEN=307 AWAYLEN=307 are supported by this serverUHNAMES NAMESX SAFELIST HCN MAXCHANNELS=500 CHANLIMIT=#:500 MAXLIST=b:60,e:60,I:60 MAXNICKLEN=30 NICKLEN=30 CHANNELLEN=32 TOPICLEN=307 KICKLEN=307 AWAYLEN=307 are supported by this server
+MAXTARGETS=20 WALLCHOPS WATCH=128 WATCHOPTS=A SILENCE=15 MODES=12 CHANTYPES=# PREFIX=(qaohv)~&@%+ CHANMODES=beI,kLf,l,psmntirzMQNRTOVKDdGPZSCc NETWORK=Exalumen CASEMAPPING=ascii EXTBAN=~,SOcaRrnqj ELIST=MNUCT are supported by this serverMAXTARGETS=20 WALLCHOPS WATCH=128 WATCHOPTS=A SILENCE=15 MODES=12 CHANTYPES=# PREFIX=(qaohv)~&@%+ CHANMODES=beI,kLf,l,psmntirzMQNRTOVKDdGPZSCc NETWORK=Exalumen CASEMAPPING=ascii EXTBAN=~,SOcaRrnqj ELIST=MNUCT are supported by this server
+STATUSMSG=~&@%+ EXCEPTS INVEX CMDS=USERIP,STARTTLS,KNOCK,DCCALLOW,MAP are supported by this serverSTATUSMSG=~&@%+ EXCEPTS INVEX CMDS=USERIP,STARTTLS,KNOCK,DCCALLOW,MAP are supported by this server
+Clk-5CED2D9C is now your displayed hostClk-5CED2D9C is now your displayed host
+There are 1 users and 1 invisible on 1 serversThere are 1 users and 1 invisible on 1 servers
+1 channels formed1 channels formed
+I have 2 clients and 0 serversI have 2 clients and 0 servers
+2 2 Current local users 2, max 22 2 Current local users 2, max 2
+2 2 Current global users 2, max 22 2 Current global users 2, max 2
+- local.inhahe.com Message of the Day - - local.inhahe.com Message of the Day - 
+- 27/9/2019 9:45- 27/9/2019 9:45
+- Inhahe's private IRC server for testing his IRC client. Chances are you shouldn't be here.- Inhahe's private IRC server for testing his IRC client. Chances are you shouldn't be here.
+- - 
+- Rules:- Rules:
+- * Don't be a dickhead.- * Don't be a dickhead.
+- - 
+End of /MOTD command.End of /MOTD command.
++iwx+iwx
+* inhahe_ sets mode(s): +i, +w, +x* inhahe_ sets mode(s): +i, +w, +x
+
+= #test inhahe_ inhahe = #test inhahe_ inhahe 
+#test End of /NAMES list.#test End of /NAMES list.
+
+= #test2 @inhahe_ = #test2 @inhahe_ 
+#test2 End of /NAMES list.#test2 End of /NAMES list.
+
+local.inhahe.comlocal.inhahe.com
+
+local.inhahe.comlocal.inhahe.com
+
+local.inhahe.comlocal.inhahe.com
+* Disconnected. Reconnecting...* Disconnected. Reconnecting...
+*** Looking up your hostname...*** Looking up your hostname...
+*** Found your hostname*** Found your hostname
+
+Welcome to the Exalumen IRC Network inhahe_!inhahe@localhostWelcome to the Exalumen IRC Network inhahe_!inhahe@localhost
+* You are now signed on.* You are now signed on.
+Your host is local.inhahe.com, running version UnrealIRCd-4.0.18Your host is local.inhahe.com, running version UnrealIRCd-4.0.18
+This server was created Sat Jun 23 16:12:43 2018This server was created Sat Jun 23 16:12:43 2018
+local.inhahe.com UnrealIRCd-4.0.18 iowrsxzdHtIDZRqpWGTSB lvhopsmntikraqbeIzMQNRTOVKDdGLPZSCcflocal.inhahe.com UnrealIRCd-4.0.18 iowrsxzdHtIDZRqpWGTSB lvhopsmntikraqbeIzMQNRTOVKDdGLPZSCcf
+UHNAMES NAMESX SAFELIST HCN MAXCHANNELS=500 CHANLIMIT=#:500 MAXLIST=b:60,e:60,I:60 MAXNICKLEN=30 NICKLEN=30 CHANNELLEN=32 TOPICLEN=307 KICKLEN=307 AWAYLEN=307 are supported by this serverUHNAMES NAMESX SAFELIST HCN MAXCHANNELS=500 CHANLIMIT=#:500 MAXLIST=b:60,e:60,I:60 MAXNICKLEN=30 NICKLEN=30 CHANNELLEN=32 TOPICLEN=307 KICKLEN=307 AWAYLEN=307 are supported by this server
+MAXTARGETS=20 WALLCHOPS WATCH=128 WATCHOPTS=A SILENCE=15 MODES=12 CHANTYPES=# PREFIX=(qaohv)~&@%+ CHANMODES=beI,kLf,l,psmntirzMQNRTOVKDdGPZSCc NETWORK=Exalumen CASEMAPPING=ascii EXTBAN=~,SOcaRrnqj ELIST=MNUCT are supported by this serverMAXTARGETS=20 WALLCHOPS WATCH=128 WATCHOPTS=A SILENCE=15 MODES=12 CHANTYPES=# PREFIX=(qaohv)~&@%+ CHANMODES=beI,kLf,l,psmntirzMQNRTOVKDdGPZSCc NETWORK=Exalumen CASEMAPPING=ascii EXTBAN=~,SOcaRrnqj ELIST=MNUCT are supported by this server
+STATUSMSG=~&@%+ EXCEPTS INVEX CMDS=USERIP,STARTTLS,KNOCK,DCCALLOW,MAP are supported by this serverSTATUSMSG=~&@%+ EXCEPTS INVEX CMDS=USERIP,STARTTLS,KNOCK,DCCALLOW,MAP are supported by this server
+Clk-5CED2D9C is now your displayed hostClk-5CED2D9C is now your displayed host
+There are 1 users and 1 invisible on 1 serversThere are 1 users and 1 invisible on 1 servers
+1 channels formed1 channels formed
+I have 2 clients and 0 serversI have 2 clients and 0 servers
+2 2 Current local users 2, max 22 2 Current local users 2, max 2
+2 2 Current global users 2, max 22 2 Current global users 2, max 2
+- local.inhahe.com Message of the Day - - local.inhahe.com Message of the Day - 
+- 27/9/2019 9:45- 27/9/2019 9:45
+- Inhahe's private IRC server for testing his IRC client. Chances are you shouldn't be here.- Inhahe's private IRC server for testing his IRC client. Chances are you shouldn't be here.
+- - 
+- Rules:- Rules:
+- * Don't be a dickhead.- * Don't be a dickhead.
+- - 
+End of /MOTD command.End of /MOTD command.
++iwx+iwx
+* inhahe_ sets mode(s): +i, +w, +x* inhahe_ sets mode(s): +i, +w, +x
+
+= #test inhahe_ inhahe = #test inhahe_ inhahe 
+#test End of /NAMES list.#test End of /NAMES list.
+
+= #test2 @inhahe_ = #test2 @inhahe_ 
+#test2 End of /NAMES list.#test2 End of /NAMES list.
+* Disconnected. Reconnecting...* Disconnected. Reconnecting...
+*** Looking up your hostname...*** Looking up your hostname...
+*** Found your hostname*** Found your hostname
+
+Welcome to the Exalumen IRC Network inhahe_!inhahe@localhostWelcome to the Exalumen IRC Network inhahe_!inhahe@localhost
+* You are now signed on.* You are now signed on.
+Your host is local.inhahe.com, running version UnrealIRCd-4.0.18Your host is local.inhahe.com, running version UnrealIRCd-4.0.18
+This server was created Sat Jun 23 16:12:43 2018This server was created Sat Jun 23 16:12:43 2018
+local.inhahe.com UnrealIRCd-4.0.18 iowrsxzdHtIDZRqpWGTSB lvhopsmntikraqbeIzMQNRTOVKDdGLPZSCcflocal.inhahe.com UnrealIRCd-4.0.18 iowrsxzdHtIDZRqpWGTSB lvhopsmntikraqbeIzMQNRTOVKDdGLPZSCcf
+UHNAMES NAMESX SAFELIST HCN MAXCHANNELS=500 CHANLIMIT=#:500 MAXLIST=b:60,e:60,I:60 MAXNICKLEN=30 NICKLEN=30 CHANNELLEN=32 TOPICLEN=307 KICKLEN=307 AWAYLEN=307 are supported by this serverUHNAMES NAMESX SAFELIST HCN MAXCHANNELS=500 CHANLIMIT=#:500 MAXLIST=b:60,e:60,I:60 MAXNICKLEN=30 NICKLEN=30 CHANNELLEN=32 TOPICLEN=307 KICKLEN=307 AWAYLEN=307 are supported by this server
+MAXTARGETS=20 WALLCHOPS WATCH=128 WATCHOPTS=A SILENCE=15 MODES=12 CHANTYPES=# PREFIX=(qaohv)~&@%+ CHANMODES=beI,kLf,l,psmntirzMQNRTOVKDdGPZSCc NETWORK=Exalumen CASEMAPPING=ascii EXTBAN=~,SOcaRrnqj ELIST=MNUCT are supported by this serverMAXTARGETS=20 WALLCHOPS WATCH=128 WATCHOPTS=A SILENCE=15 MODES=12 CHANTYPES=# PREFIX=(qaohv)~&@%+ CHANMODES=beI,kLf,l,psmntirzMQNRTOVKDdGPZSCc NETWORK=Exalumen CASEMAPPING=ascii EXTBAN=~,SOcaRrnqj ELIST=MNUCT are supported by this server
+STATUSMSG=~&@%+ EXCEPTS INVEX CMDS=USERIP,STARTTLS,KNOCK,DCCALLOW,MAP are supported by this serverSTATUSMSG=~&@%+ EXCEPTS INVEX CMDS=USERIP,STARTTLS,KNOCK,DCCALLOW,MAP are supported by this server
+Clk-5CED2D9C is now your displayed hostClk-5CED2D9C is now your displayed host
+There are 1 users and 1 invisible on 1 serversThere are 1 users and 1 invisible on 1 servers
+1 channels formed1 channels formed
+I have 2 clients and 0 serversI have 2 clients and 0 servers
+2 2 Current local users 2, max 22 2 Current local users 2, max 2
+2 2 Current global users 2, max 22 2 Current global users 2, max 2
+- local.inhahe.com Message of the Day - - local.inhahe.com Message of the Day - 
+- 27/9/2019 9:45- 27/9/2019 9:45
+- Inhahe's private IRC server for testing his IRC client. Chances are you shouldn't be here.- Inhahe's private IRC server for testing his IRC client. Chances are you shouldn't be here.
+- - 
+- Rules:- Rules:
+- * Don't be a dickhead.- * Don't be a dickhead.
+- - 
+End of /MOTD command.End of /MOTD command.
++iwx+iwx
+* inhahe_ sets mode(s): +i, +w, +x* inhahe_ sets mode(s): +i, +w, +x
+
+= #test inhahe_ inhahe = #test inhahe_ inhahe 
+#test End of /NAMES list.#test End of /NAMES list.
+
+= #test2 @inhahe_ = #test2 @inhahe_ 
+#test2 End of /NAMES list.#test2 End of /NAMES list.
+
+local.inhahe.comlocal.inhahe.com
+* Disconnected. Reconnecting...* Disconnected. Reconnecting...
+*** Looking up your hostname...*** Looking up your hostname...
+*** Found your hostname (cached)*** Found your hostname (cached)
+
+Welcome to the Exalumen IRC Network inhahe_!inhahe@localhostWelcome to the Exalumen IRC Network inhahe_!inhahe@localhost
+* You are now signed on.* You are now signed on.
+Your host is local.inhahe.com, running version UnrealIRCd-4.0.18Your host is local.inhahe.com, running version UnrealIRCd-4.0.18
+This server was created Sat Jun 23 16:12:43 2018This server was created Sat Jun 23 16:12:43 2018
+local.inhahe.com UnrealIRCd-4.0.18 iowrsxzdHtIDZRqpWGTSB lvhopsmntikraqbeIzMQNRTOVKDdGLPZSCcflocal.inhahe.com UnrealIRCd-4.0.18 iowrsxzdHtIDZRqpWGTSB lvhopsmntikraqbeIzMQNRTOVKDdGLPZSCcf
+UHNAMES NAMESX SAFELIST HCN MAXCHANNELS=500 CHANLIMIT=#:500 MAXLIST=b:60,e:60,I:60 MAXNICKLEN=30 NICKLEN=30 CHANNELLEN=32 TOPICLEN=307 KICKLEN=307 AWAYLEN=307 are supported by this serverUHNAMES NAMESX SAFELIST HCN MAXCHANNELS=500 CHANLIMIT=#:500 MAXLIST=b:60,e:60,I:60 MAXNICKLEN=30 NICKLEN=30 CHANNELLEN=32 TOPICLEN=307 KICKLEN=307 AWAYLEN=307 are supported by this server
+MAXTARGETS=20 WALLCHOPS WATCH=128 WATCHOPTS=A SILENCE=15 MODES=12 CHANTYPES=# PREFIX=(qaohv)~&@%+ CHANMODES=beI,kLf,l,psmntirzMQNRTOVKDdGPZSCc NETWORK=Exalumen CASEMAPPING=ascii EXTBAN=~,SOcaRrnqj ELIST=MNUCT are supported by this serverMAXTARGETS=20 WALLCHOPS WATCH=128 WATCHOPTS=A SILENCE=15 MODES=12 CHANTYPES=# PREFIX=(qaohv)~&@%+ CHANMODES=beI,kLf,l,psmntirzMQNRTOVKDdGPZSCc NETWORK=Exalumen CASEMAPPING=ascii EXTBAN=~,SOcaRrnqj ELIST=MNUCT are supported by this server
+STATUSMSG=~&@%+ EXCEPTS INVEX CMDS=USERIP,STARTTLS,KNOCK,DCCALLOW,MAP are supported by this serverSTATUSMSG=~&@%+ EXCEPTS INVEX CMDS=USERIP,STARTTLS,KNOCK,DCCALLOW,MAP are supported by this server
+Clk-5CED2D9C is now your displayed hostClk-5CED2D9C is now your displayed host
+There are 1 users and 1 invisible on 1 serversThere are 1 users and 1 invisible on 1 servers
+1 channels formed1 channels formed
+I have 2 clients and 0 serversI have 2 clients and 0 servers
+2 2 Current local users 2, max 22 2 Current local users 2, max 2
+2 2 Current global users 2, max 22 2 Current global users 2, max 2
+- local.inhahe.com Message of the Day - - local.inhahe.com Message of the Day - 
+- 27/9/2019 9:45- 27/9/2019 9:45
+- Inhahe's private IRC server for testing his IRC client. Chances are you shouldn't be here.- Inhahe's private IRC server for testing his IRC client. Chances are you shouldn't be here.
+- - 
+- Rules:- Rules:
+- * Don't be a dickhead.- * Don't be a dickhead.
+- - 
+End of /MOTD command.End of /MOTD command.
++iwx+iwx
+* inhahe_ sets mode(s): +i, +w, +x* inhahe_ sets mode(s): +i, +w, +x
+
+= #test inhahe_ inhahe = #test inhahe_ inhahe 
+#test End of /NAMES list.#test End of /NAMES list.
+
+= #test2 @inhahe_ = #test2 @inhahe_ 
+#test2 End of /NAMES list.#test2 End of /NAMES list.
+* Disconnected. Reconnecting...* Disconnected. Reconnecting...
+*** Looking up your hostname...
+*** Found your hostname (cached)
+
+Welcome to the Exalumen IRC Network inhahe_!inhahe@localhost
+* You are now signed on.
+Your host is local.inhahe.com, running version UnrealIRCd-4.0.18
+This server was created Sat Jun 23 16:12:43 2018
+local.inhahe.com UnrealIRCd-4.0.18 iowrsxzdHtIDZRqpWGTSB lvhopsmntikraqbeIzMQNRTOVKDdGLPZSCcf
+UHNAMES NAMESX SAFELIST HCN MAXCHANNELS=500 CHANLIMIT=#:500 MAXLIST=b:60,e:60,I:60 MAXNICKLEN=30 NICKLEN=30 CHANNELLEN=32 TOPICLEN=307 KICKLEN=307 AWAYLEN=307 are supported by this server
+MAXTARGETS=20 WALLCHOPS WATCH=128 WATCHOPTS=A SILENCE=15 MODES=12 CHANTYPES=# PREFIX=(qaohv)~&@%+ CHANMODES=beI,kLf,l,psmntirzMQNRTOVKDdGPZSCc NETWORK=Exalumen CASEMAPPING=ascii EXTBAN=~,SOcaRrnqj ELIST=MNUCT are supported by this server
+STATUSMSG=~&@%+ EXCEPTS INVEX CMDS=USERIP,STARTTLS,KNOCK,DCCALLOW,MAP are supported by this server
+Clk-5CED2D9C is now your displayed host
+There are 1 users and 1 invisible on 1 servers
+1 channels formed
+I have 2 clients and 0 servers
+2 2 Current local users 2, max 2
+2 2 Current global users 2, max 2
+- local.inhahe.com Message of the Day - 
+- 27/9/2019 9:45
+- Inhahe's private IRC server for testing his IRC client. Chances are you shouldn't be here.
+- 
+- Rules:
+- * Don't be a dickhead.
+- 
+End of /MOTD command.
++iwx
+* inhahe_ sets mode(s): +i, +w, +x
+
+= #test inhahe_ inhahe 
+#test End of /NAMES list.
+
+= #test2 @inhahe_ 
+#test2 End of /NAMES list.
+
+local.inhahe.com
+
+local.inhahe.com
+
+local.inhahe.com
+
+local.inhahe.com
+
+local.inhahe.com
+
+local.inhahe.com
+
+local.inhahe.com
+
+local.inhahe.com
+
+tes
+local.inhahe.com
+* Disconnected. Reconnecting...
+*** Looking up your hostname...
+*** Found your hostname
+
+Welcome to the Exalumen IRC Network inhahe_!inhahe@localhost
+* You are now signed on.
+Your host is local.inhahe.com, running version UnrealIRCd-4.0.18
+This server was created Sat Jun 23 16:12:43 2018
+local.inhahe.com UnrealIRCd-4.0.18 iowrsxzdHtIDZRqpWGTSB lvhopsmntikraqbeIzMQNRTOVKDdGLPZSCcf
+UHNAMES NAMESX SAFELIST HCN MAXCHANNELS=500 CHANLIMIT=#:500 MAXLIST=b:60,e:60,I:60 MAXNICKLEN=30 NICKLEN=30 CHANNELLEN=32 TOPICLEN=307 KICKLEN=307 AWAYLEN=307 are supported by this server
+MAXTARGETS=20 WALLCHOPS WATCH=128 WATCHOPTS=A SILENCE=15 MODES=12 CHANTYPES=# PREFIX=(qaohv)~&@%+ CHANMODES=beI,kLf,l,psmntirzMQNRTOVKDdGPZSCc NETWORK=Exalumen CASEMAPPING=ascii EXTBAN=~,SOcaRrnqj ELIST=MNUCT are supported by this server
+STATUSMSG=~&@%+ EXCEPTS INVEX CMDS=USERIP,STARTTLS,KNOCK,DCCALLOW,MAP are supported by this server
+Clk-5CED2D9C is now your displayed host
+There are 1 users and 1 invisible on 1 servers
+1 channels formed
+I have 2 clients and 0 servers
+2 2 Current local users 2, max 2
+2 2 Current global users 2, max 2
+- local.inhahe.com Message of the Day - 
+- 27/9/2019 9:45
+- Inhahe's private IRC server for testing his IRC client. Chances are you shouldn't be here.
+- 
+- Rules:
+- * Don't be a dickhead.
+- 
+End of /MOTD command.
++iwx
+* inhahe_ sets mode(s): +i, +w, +x
+
+= #test inhahe_ inhahe 
+#test End of /NAMES list.
+
+= #test2 @inhahe_ 
+#test2 End of /NAMES list.
+test
+
+local.inhahe.com
+
+local.inhahe.com
+* Disconnected. Reconnecting...

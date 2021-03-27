@@ -1,0 +1,6 @@
+[localhost]
+/join #this
+/join #is
+/join #a
+/join #test
+/loadscript triviabot #this

@@ -70,16 +70,7 @@
 #change yaml conf file layout so that you don't need to specify a list of dictionaries because then you have to use the explicit dictionary format for everything in it
 #display 'connecting to..' instead of 'connecting'
 #disconnect and display 'disconected from..' when /server is called when it's already connected
-#start with network name in config file as network.name in case there's no isupport network message.
-#should we detect things like "Welcome to the UnderNet IRC Network" that are network specific to determine network.name? are those messages the same on all servers of a network? can we generalize a couple of cases of the the welcome message for all networks?
-#rejoin open channels
-#wrap a lot of things in try/excepts to be more error-tolerant
-#for some reason the font isn't fixed width
-#must set configname, isupportname, and welcomename to none when we connect. but then we have to set oldisupportname, etc. at the same time rather than when isupportname, etc. are updated.
-#show channel topics
-#recall previous inputs on up key
-#/join without being connected to a server errors out
-#disconnects when I try to connect to localhost for some reason.
+
 
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
@@ -157,17 +148,11 @@ class ChannelInputQTextEdit(QTextEdit):
       
 def lookupnetworkconfig(name): #name = network or server name
   name = name.lower()
-  print(f"name.lower(): {name.lower()}")
-  print(f"{dir(config.networks)=}")
-  for network_name in dir(config.networks):
-    print(f"{getattr(config.networks, network_name)=}")
-    network_conf = getattr(config.networks, network_name)
-    if network_name.lower() == name:
-      network_conf.name = network_name
+  for network_conf in config.networks:
+    if network_conf.name.encode("ascii").lower().decode() == name:
       return network_conf, True
     for server, port in network_conf.servers:
-      if server.lower() == name:
-        network_conf.name = network_name
+      if server.encode("ascii").lower().decode() == name:
         return network_conf, False
   return None, True
 
@@ -187,46 +172,41 @@ def docommand(windowtype, window, text): #todo: test from server, channel, and p
       else:
         addline(window, filepath, "* You are not currently connected to a server")
     else:
-      addline(window, "* Usage: /join <channel> [key]")
+      window.addline("* Usage: /join <channel> [key]")
   elif params[0].lower()=="/msg":
     dest = params[1]
     #print text
     message = text.split(None, 1)[1].split(" ", 1)[1]
     window.network.server.serverconnection.msg(dest, message)
   elif params[0].lower()=="/server":
-    window.serverwindow.oldconfigname = window.network.network_config.name if window.network and window.network.network_config else None
     network_config = None
-    switches = params.pop(1)[1] if len(params) > 1 and params[1].startswith("-") and params[1] != "-" else "" 
+    switches = params.pop(1)[1] if params[1].startswith("-") else "" #todo: will break if param is simply "-"
     if len(params) > 3:
-      addline(window, "* Usage: /server [-m] [<server> [port]]")
+      window.addline("* Usage: /server [-m] [<server> [port]]")
       return
     if "m" in switches:
       serverwindow = ServerWindow()
       serverwindows.append(serverwindow)
       mainwin.tab_widget.setCurrentWidget(serverwindow.tab_index)
+      network = Network(None, network_config)
       if len(params) == 1:
-        network_config = copy.deepcopy(window.network.network_config)
+        network_config = copy.deepcopy(window.network.config)
       else:
         network_config, isbynetwork = lookupnetworkconfig(params[1])
       if len(params) == 1:
-        if window.network and window.network.network_config and window.network.network_config.servername:
-          network_config = window.network.network_config
+        if window.network and window.network.config and window.network.config.servername:
+          network_config = window.network.config
         else:
-          addline(window, "* No server set for the current window and none specified.")
+          window.addline("* No server set for the current window and none specified.")
       else:
         network_config, isbynetwork = lookupnetworkconfig(params[1])
-      network = Network(None, network_config)  
-      #window.network = network #commented out because it seems wrong.
-      #window.network.serverwindow = serverwindow      
+      window.network = network
+      window.network.serverwindow = serverwindow      
     else:
       if len(params) == 1:
-        if hasattr(window.network, "conn"):
-          window.network.conn.disconnect() #does connect() automatically do this so we don't need this line? does window.network necessarily have a .conn here?
-          window.network.conn.connect()
-          return
-        else:
-          addline(window, "* No server set for the current window and none specified.")
-          return
+        window.network.conn.disconnect() #does connect() automatically do this so we don't need this line? does window.network necessarily have a .conn here?
+        window.network.conn.connect()
+        return
       else:
         network_config, isbynetwork = lookupnetworkconfig(params[1])
         if not network_config:
@@ -236,35 +216,29 @@ def docommand(windowtype, window, text): #todo: test from server, channel, and p
             window.network.serverport = int(params[3])
           else:
             window.network.serverport = 6667 #should this be network.config.name and network.config.port instead? or maybe even put it in network_config? do I have name and port in network.config? I don't remember. not good to have these in three different places unnecessarily.
-        else:
-          if hasattr(window.serverwindow, "oldconfigname") and network_config.name != window.serverwindow.oldconfigname and window.serverwindow.oldconfigname is not None: #should we make an exception if server.oldconfigname == None?
-            window.network.server.serverconnection.changednetworks(window.serverwindow.oldconfigname, network_config.name)
     temp_win = window.network.serverwindow if window.network and window.network.serverwindow else window
     mainwin.tab_widget.setTabText(temp_win.tab_index, network_config.name if network_config else params[1])
     username = network_config.username if network_config else config.username
     if username:
-      username = username.encode("ascii").decode()
+      username = username.encode("ascii")
     password = network_config.password if network_config else None
     if password:
-      password = password.encode("ascii").decode()
+      password = password.encode("ascii")
     if network_config: realname = network_config.realname
     realname = config.realname
     if realname:
-      realname = realname.encode("ascii").decode()
-    print(f"{network_config=}")
-    network = Network(network_config=network_config)
-    print(f"{dir(network_config)=}")
+      realname = realname.encode("ascii")
+    network = Network()
     nick = network_config.nicks[0] if network_config and network_config.nicks else config.nicks[0] #in the newest typescript beta this would just be
                                                                                                    #nick = network.config.nicks?.[0] ?? config.nicks[0] or something like that.
                                                                                                    #wish python had that.
                                                                                                    #https://devblogs.microsoft.com/typescript/announcing-typescript-3-7-beta/
-                                                                                                   #todo: warn if nicks not specified in config file instead of erroring out
+                                                                                                   
     realname = network_config.realname if network_config and network_config.realname else config.realname
-    server = ServerFactory(nickname=nick.encode("ascii").decode(), username=network_config.username.encode("ascii").decode() if network_config and network_config.username else None,
-                           password=network_config.password.encode("ascii").decode() if network_config and network_config.password else None, realname=realname.encode("ascii").decode() if realname else None,
+    server = ServerFactory(nickname=nick.encode("ascii"), username=network_config.username.encode("ascii") if network_config and network_config.username else None,
+                           password=network_config.password.encode("ascii") if network_config and network_config.password else None, realname=realname.encode("ascii") if realname else None,
                            network=network, network_config=network_config)
     
-    print(f"server.nickname: {server.nickname}, server.username: {server.username}, server.password: {server.password}, server.realname: {server.realname}, server.network: {server.network}, server.network_config: {server.network_config}")  #debug
     
     
     window.network = network
@@ -286,14 +260,13 @@ def docommand(windowtype, window, text): #todo: test from server, channel, and p
       servername = params[1]
       port = int(params[2]) if len(params) >= 3 else 6667 
     window.network.conn = reactor.connectTCP(servername, port, server)
-    print("got here 2") #debug
   elif params[0].lower() == "/load": #todo: should be able to send parameters to the script
     if len(params) != 2:
-      addline(window, "* Usage: /load <name>")
+      window.addline("* Usage: /load <name>")
     else:
       scripts[params[1]] = loadscript(params[1])
   else:
-    addline(window, "* Command not recognized")
+    window.addline("* Command not recognized")
 
 class MessageInputQTextEdit(QTextEdit):
   def __init__(self, messagewindow):
@@ -311,9 +284,9 @@ class MessageInputQTextEdit(QTextEdit):
         if self.messagewindow.network.server.serverconnection:
           self.messagewindow.network.server.serverconnection.msg(self.nick, text)
           for msg in text.split(r"\n"):
-            addline(self.messagewindow, "<%s> %s" % (self.messagewindow.network.server.serverconnection.nickname, msg))
+            self.messagewindow.addline("<%s> %s" % (self.messagewindow.network.server.serverconnection.nickname, msg))
         else:
-          addline(self.messagewindow, "* You are not currently connected to a server")
+          self.messagewindow.addline("* You are not currently connected to a server")
     else:
       QTextEdit.keyPressEvent(self, event)
 
@@ -388,11 +361,85 @@ class User:
     self.channels = channels
     self.message = messagewindow
 
+  # def irc_RPL_WELCOME(self, prefix, params): #actually we should be doing this in irc_RPL_ISUPPORT (NETWORK=). do both? do all irc servers send ISUPPORT NETWORK=?
+  #   if params[1].startswith("Welcome to the "):
+  #     networkname = params[1].split()[3] #do network names ever have more than one word in them? i'm only capturing one word because i saw both "irc network" and "internet chat relay network" after this word
+  #     oldnetworkname = getattr(self.server.network, name, None) #should networkname go under network, server or serverconnection? 
+  #     self.server.network.name = networkname #should we detecte a network change on reconnect in irc_RPL_WELCOME or in irc_RPL_ISUPPORT? we shouldn't do both because a network could give slightly different results for those two things.
+  #     if oldnetworkname and (networkname.lower() != oldnetworkname.lower()): #calling .lower here is the Right Thing to do, right? 
+  #       self.changednetworks(oldnetworkname, networkname)
+  #       #todo: we may also want to do something if networkname.lower() != self.server.network.config["name"].lower()
+
+  def irc_RPL_ISUPPORT(self, prefix, params):
+    for param in params[1:]:
+      keyvalue = param.split("=",1)
+      if len(keyvalue) == 2:
+        self.server.network.isupport[keyvalue[0]]=keyvalue[1]
+      else:
+        self.server.network.isupport[keyvalue[0]]=None
+      if keyvalue[0] == "NETWORK":
+        networkname = keyvalue[1] #ISUPPORT NETWORK without an =somevalue will cause an exception but who cares. exceptions are eaten, and why would a server do that?
+        oldnetworkname = getattr(self.server.network, name, None) 
+        self.server.network.name=networkname
+        mainwin.tab_widget.setTabText(self.server.network.serverwindow.tab_index, networkname)
+        if oldnetworkname and (networkname.lower() != oldnetworkname.lower()): #calling .lower here is the Right Thing to do, right? 
+          self.changednetworks(oldnetworkname, networkname)
+  #       #todo: we may also want to do something if networkname.lower() != self.server.network.config["name"].lower()
+
+  def changednetworks(self, oldnetworkname, newnetworkname): #should probably rename this to networkchanged to make it more consistent
+    for channel in self.network.channels.iterValues():
+      channel.channelwindow.deleteLater()
+    self.network.channels = {}
+    for messagewindow in self.network.messagewindows.iterValues():
+      messagewindow.deleteLater()
+    self.network.messagewindows = {}
+    self.serverwindow.openlogfile.close()
+    self.serverwindow.logfilepath = getlogfilepath("status", network.name)
+    self.serverwindow.openlogfile = open(self.logfilepath, "a")
+    
+  def irc_RPL_NAMREPLY(self, prefix, params):
+    channelname_lower = irc.irclower(params[2])
+    for nick in params[3].split():
+      nmo = re.match(r"([^a-zA-Z_[\]{}^`|]*).*", nick) #numbers and - can't be first character of a nick
+      np = nick[:nmo.end(1)]
+      nwp = nick[nmo.end(1):]
+      nwp_lower = nwp.lower() #what is nwp. should I be using irclower() here?
+      user = User(nwp, prefix=np)
+      channel = self.server.network.channels[channelname_lower]
+      channel.users[nwp_lower] = user
+      #self.server.channels[channelname_lower].channelwindow.nickslist.insertHtml(nick + "<br>")
+      item = NickItem(nick, user)
+      channel.channelwindow.nickslist.addItem(item)
+      channel.users[nwp_lower].item = item
+      
+  def irc_ERR_NICKNAMEINUSE(self, prefix, params):
+    if not self.signedon: #should test if this is correct.
+      oldnick = self.server.network.config["nicks"][self.nickindex]
+      self.nickindex = (self.nickindex+1) % len(self.server.network.config["nicks"])
+      newnick = self.server.network.config["nicks"][self.nickindex].encode("ascii")
+      addline(self.server.network.serverwindow, '* Nick "%s" is taken. Changing nick to "%s"' % (oldnick, newnick))
+      self.setNick(newnick)
+      self.network.mynick = newnick
+      self.nickname = newnick.decode() #do i have to do this?
+    else:
+      addline(self.server.network.serverwindow, ' * Nick "%s" already in use' % XXX)#todo: find out where %s is in the params
+      
+  def irc_ERR_ERRONEUSNICKNAME(self, prefix, params):
+    if not self.signedon: #should test if this is correct.
+      oldnick = self.server.network.config["nicks"][self.nickindex]
+      self.nickindex = (self.nickindex+1) % len(self.server.network.config["nicks"])
+      newnick = self.server.network.config["nicks"][self.nickindex].encode("ascii")
+      addline(self.server.network.serverwindow, '* Nick "%s" is taken. Changing nick to "%s"' % (oldnick, newnick)) #todo: use oldnick from params instead of config.
+      self.setNick(newnick)
+      self.nickname = newnick.decode() #do i have to do this?
+    else:
+      addline(self.server.network.serverwindow, ' * "%s" is an invalid nick' % XXX)#todo: find out where %s is in the params
+      
+
 class ServerWindow(QWidget):
   def __init__(self, network=None):
     QWidget.__init__(self)
     self.network = network
-    self.subwindows = dict()
     self.tab_index = mainwin.tab_widget.addTab(self, network.config.name if network else "Server window")
     self.textwindow = QTextEdit(self)
     self.textwindow.setReadOnly(True)
@@ -409,7 +456,6 @@ class ServerWindow(QWidget):
     #self.editwindow.setSizePolicy(sizepolicy)
     self.editwindow.setFixedHeight(40)
     self.editwindow.setFocus()
-    self.serverwindow = self
     self.logfilepath = getlogfilepath("status", network.name if network else "")
     self.openlogfile = open(self.logfilepath, "a")
   def __del__(self):
@@ -440,7 +486,7 @@ class Channel:
     #todo: nick formatting options, sorting by status options, right-clickable, hoverable, size according to longest nick option (can we even do this?)
   def post(self, message):
     self.network.server.serverconnection.say(self.name, message) #todo: length check
-    addlinecolored(self.channelwindow, "<%s> %s" % (self.network.mynick, message))
+    self.channelwindow.addlinecolored("<%s> %s" % (self.network.mynick, message))
   def rejoined(self):
     pass #todo
     
@@ -487,11 +533,10 @@ class ChannelWindow(QWidget):
     print(f"{self.channel.name =}")
     print(f"{network.name =}")
     
-    name = getattr(network.serverwindow, "isupportname", None) or getattr(netwrk.serverwindow, "configname", None) or getattr(netwrk.serverwindow, "welcomename", None) or "unknown_network"
+    self.logfilepath = getlogfilepath(self.channel.name, network.name)
     
-    self.logfilepath = getlogfilepath(self.channel.name, network.serverwindow.isupportname or name)
     
-  
+    
     self.openlogfile = open(self.logfilepath, "a")
   def __del__(self):
     self.openlogfile.close()
@@ -501,16 +546,14 @@ class NickItem(QListWidgetItem):
     QListWidgetItem.__init__(self, nick)
     self.user = user
   def __lt__(self, other):
-    return self.text().lower() < other.text().lower() #todo: is "@" < "+"? cuz we want ops on top. | do we want irclower here?
+    return self.text().toLower() < other.text().toLower() #todo: is "@" < "+"? cuz we want ops on top.
   
 class Network(object):
   def __init__(self, server=None, network_config=None, mynick=None, serverwindow=None):
     self.conn = None
     self.server = server
     self.isupport = {}
-    print("network class")
-    print(f"self.network_config=")
-    self.network_config = network_config
+    self.config = network_config
     self.channels = {}
     self.mynick = mynick
     self.name = None
@@ -600,12 +643,10 @@ def yaml_to_namespaces(b):
           return yaml_to_namespaces(self.d[attr])
         else:
           return None
-      def __dir__(self):
-        return self.d.keys()
     o = O(b)
   #elif type(b) in (unicode, int, float):
   else:
-    o = b.encode("ascii").decode() if type(b) == bytes else b
+    o = b
   return o
 
 class Script: 
@@ -765,98 +806,16 @@ class ServerConnection(irc.IRCClient):
     #print [command, prefix, params]
     #addline(self.server.network.serverwindow, repr([command, prefix, params])) #debug
     #if command not in ("PING", "PONG", "MODE", "RPL_NAMREPLY", "RPL_ENDOFNAMES", "JOIN", "RPL_TOPIC", "333"): #todo: handle notice and add it to this list. and of course, only show params
-    #print(' '.join(params[1:])) #debug
-    
     addline(self.server.network.serverwindow, ' '.join(params[1:]))
       
   def nickChanged(self, newnick):
     self.nickname = newnick.decode()
     addline(self.server.network.serverwindow, "* Your nick has been changed to " + newnick)
-    mainwin.tab_widget.setTabText(mainwin.tab_widget.indexOf(self.server.network.serverwindow), "%s - %s" % (self.server.network.network_config["name"], self.nickname)) #might be better to store the index
+    mainwin.tab_widget.setTabText(mainwin.tab_widget.indexOf(self.server.network.serverwindow), "%s - %s" % (self.server.network.config["name"], self.nickname)) #might be better to store the index
     for channel in self.server.network.channels.values():
       addline(channel.channelwindow, "* Your nick has been changed to " + newnick)
     for messagewindow in self.server.network.messagewindows:
       addline(messagewindow, "* Your nick has been changed to " + newnick)
-      
-  def irc_RPL_WELCOME(self, prefix, params): #actually we should be doing this in irc_RPL_ISUPPORT (NETWORK=). do both? do all irc servers send ISUPPORT NETWORK=?
-    if params[1].startswith("Welcome to the "):
-      welcomename = params[1].split()[3] #do network names ever have more than one word in them? i'm only capturing one word because i saw both "irc network" and "internet chat relay network" after this word
-      oldwelcomename = getattr(self.server.network.serverwindow, "welcomename", None) #should networkname go under network, server or serverconnection? 
-      self.server.network.serverwindow.welcomename = welcomename 
-      if oldwelcomename and (welcomename.lower() != oldwelcomename.lower()): #calling .lower here is the Right Thing to do, right? 
-        self.changednetworks(oldwelcomename, welcomename)
-       
-  def irc_RPL_ISUPPORT(self, prefix, params):
-    for param in params[1:]:
-      keyvalue = param.split("=",1)
-      if len(keyvalue) == 2:
-        self.server.network.isupport[keyvalue[0]]=keyvalue[1]
-      else:
-        self.server.network.isupport[keyvalue[0]]=None
-      if keyvalue[0] == "NETWORK":
-        networkname = keyvalue[1] #ISUPPORT NETWORK without an =somevalue will cause an exception but who cares. exceptions are eaten, and why would a server do that?
-        oldnetworkname = getattr(self.server.network.serverwindow, "isupportname", None) 
-        self.server.network.serverwindow.isupportname=networkname
-        
-        print(f"networkname = ") 
-        
-        mainwin.tab_widget.setTabText(self.server.network.serverwindow.tab_index, networkname)
-        if oldnetworkname and (networkname.lower() != oldnetworkname.lower()): #calling .lower here is the Right Thing to do, right? 
-          self.changednetworks(oldnetworkname, networkname)
-  #       #todo: we may also want to do something if networkname.lower() != self.server.network.config["name"].lower()
-
-  def changednetworks(self, oldnetworkname, newnetworkname): #should probably rename this to networkchanged to make it more consistent
-    self.server.network.serverwindow.subwindows = dict()
-    for channel in self.network.channels.iterValues():
-      channel.channelwindow.deleteLater()
-    self.network.channels = {}
-    for messagewindow in self.network.messagewindows.iterValues():
-      messagewindow.deleteLater()
-    self.network.messagewindows = {}
-    self.serverwindow.openlogfile.close()
-    self.serverwindow.logfilepath = getlogfilepath("status", newnetworkname)
-    self.serverwindow.openlogfile = open(self.logfilepath, "a")
-    
-  def irc_RPL_NAMREPLY(self, prefix, params):
-    channelname_lower = irc.irclower(params[2])
-    for nick in params[3].split():
-      nmo = re.match(r"([^a-zA-Z_[\]{}^`|]*).*", nick) #numbers and - can't be first character of a nick
-      np = nick[:nmo.end(1)]
-      nwp = nick[nmo.end(1):]
-      nwp_lower = nwp.lower() #what is nwp. should I be using irclower() here?
-      user = User(nwp, prefix=np)
-      channel = self.server.network.channels[channelname_lower]
-      channel.users[nwp_lower] = user
-      #self.server.channels[channelname_lower].channelwindow.nickslist.insertHtml(nick + "<br>")
-      item = NickItem(nick, user)
-      print("irc_rpl_namreply") 
-      print(f"{self.server.network.channels[channelname_lower].channelwindow=}")
-      channel.channelwindow.nickslist.addItem(item)
-      channel.users[nwp_lower].item = item
-      
-  def irc_ERR_NICKNAMEINUSE(self, prefix, params):
-    if not self.signedon: #should test if this is correct.
-      oldnick = self.server.network.network_config.nicks[self.nickindex]
-      self.nickindex = (self.nickindex+1) % len(self.server.network.network_config.nicks)
-      newnick = self.server.network.network_config.nicks[self.nickindex]
-      addline(self.server.network.serverwindow, '* Nick "%s" is taken. Changing nick to "%s"' % (oldnick, newnick))
-      self.setNick(newnick)
-      self.server.network.mynick = newnick
-      #self.nickname = newnick #do i have to do this? (the answer is yes. not sure why. maybe the server doesn't send a changed nick command when you're not signed on yet so irc.py doesn't update nickname. or maybe something needs to be .decode()d.)
-    else:
-      addline(self.server.network.serverwindow, ' * Nick "%s" already in use' % XXX)#todo: find out where %s is in the params
-      
-  def irc_ERR_ERRONEUSNICKNAME(self, prefix, params):
-    if not self.signedon: #should test if this is correct.
-      oldnick = self.server.network.network_config.nicks[self.nickindex]
-      self.nickindex = (self.nickindex+1) % len(self.server.network.network_config.nicks)
-      newnick = self.server.network.network_config.nicks[self.nickindex].encode("ascii").decode()
-      print(f"{newnick=}")
-      addline(self.server.network.serverwindow, '* Nick "%s" is erroneous. Changing nick to "%s"' % (oldnick, newnick)) #todo: use oldnick from params instead of config.
-      self.setNick(newnick)
-      self.nickname = newnick.decode() #do i have to do this?
-    else:
-      addline(self.server.network.serverwindow, ' * "%s" is an erroneous nick' % XXX)#todo: find out where %s is in the params
       
   def kickedFrom(self, channelname, kicker, message):
     channels = self.server.network.channels
@@ -965,55 +924,44 @@ class ServerConnection(irc.IRCClient):
       addline(messagewindow, "* %s (%s@%s) has quit IRC: %s" % (nick, ident, host, quitmsg))
     
   def joined(self, channelname):
-    print("joined "+channelname)
     channelname_lower = irc.irclower(channelname)
     channel = Channel(channelname, self.server.network)
-    if channelname_lower in self.server.network.serverwindow.subwindows:
-      channel.channelwindow = self.server.network.serverwindow.subwindows[channelname_lower]
-    else:
-      channelwindow = ChannelWindow(channel, self.server.network)
-      channel.channelwindow = channelwindow
-      channel.channelwindow.serverwindow = self.server.network.serverwindow
-    addline(channel.channelwindow, "* joined "+ channelname)
+    channelwindow = ChannelWindow(channel, self.server.network)
+    channel.channelwindow = channelwindow
     self.server.network.channels[channelname_lower] = channel
-    print("------------joined------------")
-    print(f"{self.server.network.channels[channelname_lower].channelwindow=}")
-    self.server.network.serverwindow.subwindows[channelname_lower] = channelwindow
     app.processEvents()
     sizes = channelwindow.splitter.sizes()
     channelwindow.splitter.setSizes([sum(sizes)-150, 150])
   
-  def modeChanged(self, hostmask, channelname, added, modes, params): #problem: displaying mode changes the way i do may mislead users about how one *sets* modes.
+  def modeChanged(self, hostmask, channelname, added, removed): #problem: displaying mode changes the way i do may mislead users about how one *sets* modes.
     channel = self.server.network.channels.get(irc.irclower(channelname))
     nick, ident, host = splithostmask(hostmask)
     if channel is not None:
       nmd = {"q": "~", "a": "&", "o": "@", "h": "%", "v": "+"} #is this the way a *real* irc client updates nicks in the nick list upon mode change?
       mctexts = []
-      if added:
-        for mc in zip(modes, params):
-          if mc[1]:
-            mctexts.append("+%s %s" % mc)
-            nickprefix = nmd.get(mc[0])
-            if nickprefix:
-              user = channel.users.get(irc.irclower(mc[1]))
-              if user: #something is wrong if user is None, but i'm not just asssuming it won't be because then if it is the mode changes won't be shown in channel, and also it won't process the rest of the mode changes.
-                user.prefix = nickprefix
-                user.item.setText(nickprefix + mc[1])
-          else:
-            mctexts.append("+" + mc[0])
-      else: #removed
-        for mc in zip(modes, params):
-          if mc[1]:
-            mctexts.append("-%s %s" % mc)
-            nickprefix = nmd.get(mc[0])
-            if nickprefix:
-              user = channel.users.get(irc.irclower(mc[1]))
-              if user: #something is wrong if user is None, but i'm not just asssuming it won't be because then if it is the mode changes won't be shown in channel, and also it won't process the rest of the mode changes.
-                if user.prefix == nickprefix:
-                  user.prefix = ""
-                  user.item.setText(mc[1])
-          else:
-            mctexts.append("-" + mc[0])
+      for mc in added:
+        if mc[1]:
+          mctexts.append("+%s %s" % mc)
+          nickprefix = nmd.get(mc[0])
+          if nickprefix:
+            user = channel.users.get(irc.irclower(mc[1]))
+            if user: #something is wrong if user is None, but i'm not just asssuming it won't be because then if it is the mode changes won't be shown in channel, and also it won't process the rest of the mode changes.
+              user.prefix = nickprefix
+              user.item.setText(nickprefix + mc[1])
+        else:
+          mctexts.append("+" + mc[0])
+      for mc in removed:
+        if mc[1]:
+          mctexts.append("-%s %s" % mc)
+          nickprefix = nmd.get(mc[0])
+          if nickprefix:
+            user = channel.users.get(irc.irclower(mc[1]))
+            if user: #something is wrong if user is None, but i'm not just asssuming it won't be because then if it is the mode changes won't be shown in channel, and also it won't process the rest of the mode changes.
+              if user.prefix == nickprefix:
+                user.prefix = ""
+                user.item.setText(mc[1])
+        else:
+          mctexts.append("-" + mc[0])
       addline(channel.channelwindow, "* %s sets mode(s): %s" % (nick, ", ".join(mctexts)))
       user = channel.users[irc.irclower(nick)]
       if ident: user.ident = ident
@@ -1021,18 +969,16 @@ class ServerConnection(irc.IRCClient):
     else:
       if channelname == self.nickname:
         mctexts = []
-        if added:
-          for mc in zip(modes, params):
-            if mc[1]:
-              mctexts.append("+%s %s" % mc)
-            else:
-              mctexts.append("+" + mc[0])
-        else:
-          for mc in zip(modes, params):
-            if mc[1]:
-              mctexts.append("-%s %s" % mc)
-            else:
-              mctexts.append("-" + mc[0])
+        for mc in added:
+          if mc[1]:
+            mctexts.append("+%s %s" % mc)
+          else:
+            mctexts.append("+" + mc[0])
+        for mc in removed:
+          if mc[1]:
+            mctexts.append("-%s %s" % mc)
+          else:
+            mctexts.append("-" + mc[0])
         addline(self.server.network.serverwindow, "* %s sets mode(s): %s" % (nick, ", ".join(mctexts)))
       else:
         print("error: mode changes but target not recognized as a channel i'm in or as my own nick.  channelname: \"%s\"; self.nickname: \"%s\"" % (channelname, self.nickname))
@@ -1040,8 +986,6 @@ class ServerConnection(irc.IRCClient):
 class ServerFactory(protocol.ReconnectingClientFactory):
   def __init__(self, nickname="qttirc", password=None, username="qttirc", realname=None, network=None, network_config=None):
     self.network = network
-    print("ServerFactory")
-    print(f"self.network_config=")
     self.network_config = network_config
     self.network.mynick = nickname
     self.nickname = nickname
@@ -1052,7 +996,6 @@ class ServerFactory(protocol.ReconnectingClientFactory):
     protocol.ReconnectingClientFactory.maxDelay = 10 #no idea what value this should be. 3.5 wasn't slow enough, i was being throttled.
     
   def startedConnecting(self, connector):
-    print("did this 5") #debug
     pass
   
   def buildProtocol(self, addr):
@@ -1083,16 +1026,8 @@ class ServerFactory(protocol.ReconnectingClientFactory):
       self.network.serverindex = (self.network.serverindex+1) % len(self.network_config.servers) #todo: make it actually use these values
       addr, port = self.network_config.servers[self.network.serverindex]
 
-      print( "oldaddr:", oldaddr)
-      print ("oldport:", oldport)
-      print ("addr:", addr)
-      print( "port:", port)
-
       addline(self.network.serverwindow, "* Connection to (%s, %d) failed. Connecting to (%s, %d)..." % (oldaddr, oldport, addr, port)) #todo: add reason for fail
 
-      
-      print("did this 4") #debug
-      
     #reactor.callLater(config.reconnectdelay, reactor.connectTCP, addr.encode("ascii"), port, self)
       reactor.connectTCP(addr, port, self) #is this feasible? i don't know a better way to do this. connector.connect() apparently doesn't take server/port as arguments.
     
