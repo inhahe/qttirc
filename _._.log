@@ -1,0 +1,288 @@
+*** Host resolution is disabled, using IP (127.0.0.1)
+
+
+* Disconnected because [Failure instance: Traceback: <class 'TypeError'>: cannot unpack non-iterable NoneType object
+D:\Python3.8.6-32\lib\site-packages\twisted\python\log.py:86:callWithContext
+D:\Python3.8.6-32\lib\site-packages\twisted\python\context.py:122:callWithContext
+D:\Python3.8.6-32\lib\site-packages\twisted\python\context.py:85:callWithContext
+D:\Python3.8.6-32\lib\site-packages\qt5reactor\core.py:178:_read
+--- <exception caught here> ---
+D:\Python3.8.6-32\lib\site-packages\qt5reactor\core.py:171:_read
+D:\Python3.8.6-32\lib\site-packages\twisted\internet\tcp.py:243:doRead
+D:\Python3.8.6-32\lib\site-packages\twisted\internet\tcp.py:249:_dataReceived
+D:\qttirc0.1\irc.py:2650:dataReceived
+D:\Python3.8.6-32\lib\site-packages\twisted\protocols\basic.py:572:dataReceived
+D:\qttirc0.1\irc.py:2660:lineReceived
+]. Reconnecting...
+*** Host resolution is disabled, using IP (127.0.0.1)
+
+
+* Disconnected because [Failure instance: Traceback: <class 'TypeError'>: cannot unpack non-iterable NoneType object
+D:\Python3.8.6-32\lib\site-packages\twisted\python\log.py:86:callWithContext
+D:\Python3.8.6-32\lib\site-packages\twisted\python\context.py:122:callWithContext
+D:\Python3.8.6-32\lib\site-packages\twisted\python\context.py:85:callWithContext
+D:\Python3.8.6-32\lib\site-packages\qt5reactor\core.py:178:_read
+--- <exception caught here> ---
+D:\Python3.8.6-32\lib\site-packages\qt5reactor\core.py:171:_read
+D:\Python3.8.6-32\lib\site-packages\twisted\internet\tcp.py:243:doRead
+D:\Python3.8.6-32\lib\site-packages\twisted\internet\tcp.py:249:_dataReceived
+D:\qttirc0.1\irc.py:2650:dataReceived
+D:\Python3.8.6-32\lib\site-packages\twisted\protocols\basic.py:572:dataReceived
+D:\qttirc0.1\irc.py:2660:lineReceived
+]. Reconnecting...
+*** Host resolution is disabled, using IP (127.0.0.1)
+
+
+* Disconnected because [Failure instance: Traceback: <class 'TypeError'>: cannot unpack non-iterable NoneType object
+D:\Python3.8.6-32\lib\site-packages\twisted\python\log.py:86:callWithContext
+D:\Python3.8.6-32\lib\site-packages\twisted\python\context.py:122:callWithContext
+D:\Python3.8.6-32\lib\site-packages\twisted\python\context.py:85:callWithContext
+D:\Python3.8.6-32\lib\site-packages\qt5reactor\core.py:178:_read
+--- <exception caught here> ---
+D:\Python3.8.6-32\lib\site-packages\qt5reactor\core.py:171:_read
+D:\Python3.8.6-32\lib\site-packages\twisted\internet\tcp.py:243:doRead
+D:\Python3.8.6-32\lib\site-packages\twisted\internet\tcp.py:249:_dataReceived
+D:\qttirc0.1\irc.py:2650:dataReceived
+D:\Python3.8.6-32\lib\site-packages\twisted\protocols\basic.py:572:dataReceived
+D:\qttirc0.1\irc.py:2660:lineReceived
+]. Reconnecting...
+*** Host resolution is disabled, using IP (127.0.0.1)
+
+
+* Disconnected because [Failure instance: Traceback: <class 'TypeError'>: cannot unpack non-iterable NoneType object
+D:\Python3.8.6-32\lib\site-packages\twisted\python\log.py:86:callWithContext
+D:\Python3.8.6-32\lib\site-packages\twisted\python\context.py:122:callWithContext
+D:\Python3.8.6-32\lib\site-packages\twisted\python\context.py:85:callWithContext
+D:\Python3.8.6-32\lib\site-packages\qt5reactor\core.py:178:_read
+--- <exception caught here> ---
+D:\Python3.8.6-32\lib\site-packages\qt5reactor\core.py:171:_read
+D:\Python3.8.6-32\lib\site-packages\twisted\internet\tcp.py:243:doRead
+D:\Python3.8.6-32\lib\site-packages\twisted\internet\tcp.py:249:_dataReceived
+D:\qttirc0.1\irc.py:2650:dataReceived
+D:\Python3.8.6-32\lib\site-packages\twisted\protocols\basic.py:572:dataReceived
+D:\qttirc0.1\irc.py:2660:lineReceived
+]. Reconnecting...
+*** Host resolution is disabled, using IP (127.0.0.1)
+
+
+* Disconnected because [Failure instance: Traceback: <class 'TypeError'>: cannot unpack non-iterable NoneType object
+D:\Python3.8.6-32\lib\site-packages\twisted\python\log.py:86:callWithContext
+D:\Python3.8.6-32\lib\site-packages\twisted\python\context.py:122:callWithContext
+D:\Python3.8.6-32\lib\site-packages\twisted\python\context.py:85:callWithContext
+D:\Python3.8.6-32\lib\site-packages\qt5reactor\core.py:178:_read
+--- <exception caught here> ---
+D:\Python3.8.6-32\lib\site-packages\qt5reactor\core.py:171:_read
+D:\Python3.8.6-32\lib\site-packages\twisted\internet\tcp.py:243:doRead
+D:\Python3.8.6-32\lib\site-packages\twisted\internet\tcp.py:249:_dataReceived
+D:\qttirc0.1\irc.py:2650:dataReceived
+D:\Python3.8.6-32\lib\site-packages\twisted\protocols\basic.py:572:dataReceived
+D:\qttirc0.1\irc.py:2660:lineReceived
+]. Reconnecting...
+*** Host resolution is disabled, using IP (127.0.0.1)
+
+
+* Disconnected because [Failure instance: Traceback: <class 'TypeError'>: cannot unpack non-iterable NoneType object
+D:\Python3.8.6-32\lib\site-packages\twisted\python\log.py:86:callWithContext
+D:\Python3.8.6-32\lib\site-packages\twisted\python\context.py:122:callWithContext
+D:\Python3.8.6-32\lib\site-packages\twisted\python\context.py:85:callWithContext
+D:\Python3.8.6-32\lib\site-packages\qt5reactor\core.py:178:_read
+--- <exception caught here> ---
+D:\Python3.8.6-32\lib\site-packages\qt5reactor\core.py:171:_read
+D:\Python3.8.6-32\lib\site-packages\twisted\internet\tcp.py:243:doRead
+D:\Python3.8.6-32\lib\site-packages\twisted\internet\tcp.py:249:_dataReceived
+D:\qttirc0.1\irc.py:2650:dataReceived
+D:\Python3.8.6-32\lib\site-packages\twisted\protocols\basic.py:572:dataReceived
+D:\qttirc0.1\irc.py:2660:lineReceived
+]. Reconnecting...
+*** Host resolution is disabled, using IP (127.0.0.1)
+
+
+* Disconnected because [Failure instance: Traceback: <class 'TypeError'>: cannot unpack non-iterable NoneType object
+D:\Python3.8.6-32\lib\site-packages\twisted\python\log.py:86:callWithContext
+D:\Python3.8.6-32\lib\site-packages\twisted\python\context.py:122:callWithContext
+D:\Python3.8.6-32\lib\site-packages\twisted\python\context.py:85:callWithContext
+D:\Python3.8.6-32\lib\site-packages\qt5reactor\core.py:178:_read
+--- <exception caught here> ---
+D:\Python3.8.6-32\lib\site-packages\qt5reactor\core.py:171:_read
+D:\Python3.8.6-32\lib\site-packages\twisted\internet\tcp.py:243:doRead
+D:\Python3.8.6-32\lib\site-packages\twisted\internet\tcp.py:249:_dataReceived
+D:\qttirc0.1\irc.py:2650:dataReceived
+D:\Python3.8.6-32\lib\site-packages\twisted\protocols\basic.py:572:dataReceived
+D:\qttirc0.1\irc.py:2660:lineReceived
+]. Reconnecting...
+*** Host resolution is disabled, using IP (127.0.0.1)
+
+
+* Disconnected because [Failure instance: Traceback: <class 'TypeError'>: cannot unpack non-iterable NoneType object
+D:\Python3.8.6-32\lib\site-packages\twisted\python\log.py:86:callWithContext
+D:\Python3.8.6-32\lib\site-packages\twisted\python\context.py:122:callWithContext
+D:\Python3.8.6-32\lib\site-packages\twisted\python\context.py:85:callWithContext
+D:\Python3.8.6-32\lib\site-packages\qt5reactor\core.py:178:_read
+--- <exception caught here> ---
+D:\Python3.8.6-32\lib\site-packages\qt5reactor\core.py:171:_read
+D:\Python3.8.6-32\lib\site-packages\twisted\internet\tcp.py:243:doRead
+D:\Python3.8.6-32\lib\site-packages\twisted\internet\tcp.py:249:_dataReceived
+D:\qttirc0.1\irc.py:2650:dataReceived
+D:\Python3.8.6-32\lib\site-packages\twisted\protocols\basic.py:572:dataReceived
+D:\qttirc0.1\irc.py:2660:lineReceived
+]. Reconnecting...
+*** Host resolution is disabled, using IP (127.0.0.1)
+
+
+* Disconnected because [Failure instance: Traceback: <class 'TypeError'>: cannot unpack non-iterable NoneType object
+D:\Python3.8.6-32\lib\site-packages\twisted\python\log.py:86:callWithContext
+D:\Python3.8.6-32\lib\site-packages\twisted\python\context.py:122:callWithContext
+D:\Python3.8.6-32\lib\site-packages\twisted\python\context.py:85:callWithContext
+D:\Python3.8.6-32\lib\site-packages\qt5reactor\core.py:178:_read
+--- <exception caught here> ---
+D:\Python3.8.6-32\lib\site-packages\qt5reactor\core.py:171:_read
+D:\Python3.8.6-32\lib\site-packages\twisted\internet\tcp.py:243:doRead
+D:\Python3.8.6-32\lib\site-packages\twisted\internet\tcp.py:249:_dataReceived
+D:\qttirc0.1\irc.py:2650:dataReceived
+D:\Python3.8.6-32\lib\site-packages\twisted\protocols\basic.py:572:dataReceived
+D:\qttirc0.1\irc.py:2660:lineReceived
+]. Reconnecting...
+*** Host resolution is disabled, using IP (127.0.0.1)
+
+
+* Disconnected because [Failure instance: Traceback: <class 'TypeError'>: cannot unpack non-iterable NoneType object
+D:\Python3.8.6-32\lib\site-packages\twisted\python\log.py:86:callWithContext
+D:\Python3.8.6-32\lib\site-packages\twisted\python\context.py:122:callWithContext
+D:\Python3.8.6-32\lib\site-packages\twisted\python\context.py:85:callWithContext
+D:\Python3.8.6-32\lib\site-packages\qt5reactor\core.py:178:_read
+--- <exception caught here> ---
+D:\Python3.8.6-32\lib\site-packages\qt5reactor\core.py:171:_read
+D:\Python3.8.6-32\lib\site-packages\twisted\internet\tcp.py:243:doRead
+D:\Python3.8.6-32\lib\site-packages\twisted\internet\tcp.py:249:_dataReceived
+D:\qttirc0.1\irc.py:2650:dataReceived
+D:\Python3.8.6-32\lib\site-packages\twisted\protocols\basic.py:572:dataReceived
+D:\qttirc0.1\irc.py:2660:lineReceived
+]. Reconnecting...
+*** Host resolution is disabled, using IP (127.0.0.1)
+
+
+* Disconnected because [Failure instance: Traceback: <class 'TypeError'>: cannot unpack non-iterable NoneType object
+D:\Python3.8.6-32\lib\site-packages\twisted\python\log.py:86:callWithContext
+D:\Python3.8.6-32\lib\site-packages\twisted\python\context.py:122:callWithContext
+D:\Python3.8.6-32\lib\site-packages\twisted\python\context.py:85:callWithContext
+D:\Python3.8.6-32\lib\site-packages\qt5reactor\core.py:178:_read
+--- <exception caught here> ---
+D:\Python3.8.6-32\lib\site-packages\qt5reactor\core.py:171:_read
+D:\Python3.8.6-32\lib\site-packages\twisted\internet\tcp.py:243:doRead
+D:\Python3.8.6-32\lib\site-packages\twisted\internet\tcp.py:249:_dataReceived
+D:\qttirc0.1\irc.py:2650:dataReceived
+D:\Python3.8.6-32\lib\site-packages\twisted\protocols\basic.py:572:dataReceived
+D:\qttirc0.1\irc.py:2660:lineReceived
+]. Reconnecting...
+*** Host resolution is disabled, using IP (127.0.0.1)
+
+
+* Disconnected because [Failure instance: Traceback: <class 'TypeError'>: cannot unpack non-iterable NoneType object
+D:\Python3.8.6-32\lib\site-packages\twisted\python\log.py:86:callWithContext
+D:\Python3.8.6-32\lib\site-packages\twisted\python\context.py:122:callWithContext
+D:\Python3.8.6-32\lib\site-packages\twisted\python\context.py:85:callWithContext
+D:\Python3.8.6-32\lib\site-packages\qt5reactor\core.py:178:_read
+--- <exception caught here> ---
+D:\Python3.8.6-32\lib\site-packages\qt5reactor\core.py:171:_read
+D:\Python3.8.6-32\lib\site-packages\twisted\internet\tcp.py:243:doRead
+D:\Python3.8.6-32\lib\site-packages\twisted\internet\tcp.py:249:_dataReceived
+D:\qttirc0.1\irc.py:2650:dataReceived
+D:\Python3.8.6-32\lib\site-packages\twisted\protocols\basic.py:572:dataReceived
+D:\qttirc0.1\irc.py:2660:lineReceived
+]. Reconnecting...
+*** Host resolution is disabled, using IP (127.0.0.1)
+
+
+* Disconnected because [Failure instance: Traceback: <class 'TypeError'>: cannot unpack non-iterable NoneType object
+D:\Python3.8.6-32\lib\site-packages\twisted\python\log.py:86:callWithContext
+D:\Python3.8.6-32\lib\site-packages\twisted\python\context.py:122:callWithContext
+D:\Python3.8.6-32\lib\site-packages\twisted\python\context.py:85:callWithContext
+D:\Python3.8.6-32\lib\site-packages\qt5reactor\core.py:178:_read
+--- <exception caught here> ---
+D:\Python3.8.6-32\lib\site-packages\qt5reactor\core.py:171:_read
+D:\Python3.8.6-32\lib\site-packages\twisted\internet\tcp.py:243:doRead
+D:\Python3.8.6-32\lib\site-packages\twisted\internet\tcp.py:249:_dataReceived
+D:\qttirc0.1\irc.py:2650:dataReceived
+D:\Python3.8.6-32\lib\site-packages\twisted\protocols\basic.py:572:dataReceived
+D:\qttirc0.1\irc.py:2660:lineReceived
+]. Reconnecting...
+*** Host resolution is disabled, using IP (127.0.0.1)
+
+
+* Disconnected because [Failure instance: Traceback: <class 'TypeError'>: cannot unpack non-iterable NoneType object
+D:\Python3.8.6-32\lib\site-packages\twisted\python\log.py:86:callWithContext
+D:\Python3.8.6-32\lib\site-packages\twisted\python\context.py:122:callWithContext
+D:\Python3.8.6-32\lib\site-packages\twisted\python\context.py:85:callWithContext
+D:\Python3.8.6-32\lib\site-packages\qt5reactor\core.py:178:_read
+--- <exception caught here> ---
+D:\Python3.8.6-32\lib\site-packages\qt5reactor\core.py:171:_read
+D:\Python3.8.6-32\lib\site-packages\twisted\internet\tcp.py:243:doRead
+D:\Python3.8.6-32\lib\site-packages\twisted\internet\tcp.py:249:_dataReceived
+D:\qttirc0.1\irc.py:2650:dataReceived
+D:\Python3.8.6-32\lib\site-packages\twisted\protocols\basic.py:572:dataReceived
+D:\qttirc0.1\irc.py:2660:lineReceived
+]. Reconnecting...
+*** Host resolution is disabled, using IP (127.0.0.1)
+
+
+* Disconnected because [Failure instance: Traceback: <class 'TypeError'>: cannot unpack non-iterable NoneType object
+D:\Python3.8.6-32\lib\site-packages\twisted\python\log.py:86:callWithContext
+D:\Python3.8.6-32\lib\site-packages\twisted\python\context.py:122:callWithContext
+D:\Python3.8.6-32\lib\site-packages\twisted\python\context.py:85:callWithContext
+D:\Python3.8.6-32\lib\site-packages\qt5reactor\core.py:178:_read
+--- <exception caught here> ---
+D:\Python3.8.6-32\lib\site-packages\qt5reactor\core.py:171:_read
+D:\Python3.8.6-32\lib\site-packages\twisted\internet\tcp.py:243:doRead
+D:\Python3.8.6-32\lib\site-packages\twisted\internet\tcp.py:249:_dataReceived
+D:\qttirc0.1\irc.py:2650:dataReceived
+D:\Python3.8.6-32\lib\site-packages\twisted\protocols\basic.py:572:dataReceived
+D:\qttirc0.1\irc.py:2660:lineReceived
+]. Reconnecting...
+*** Host resolution is disabled, using IP (127.0.0.1)
+
+
+* Disconnected because [Failure instance: Traceback: <class 'TypeError'>: cannot unpack non-iterable NoneType object
+D:\Python3.8.6-32\lib\site-packages\twisted\python\log.py:86:callWithContext
+D:\Python3.8.6-32\lib\site-packages\twisted\python\context.py:122:callWithContext
+D:\Python3.8.6-32\lib\site-packages\twisted\python\context.py:85:callWithContext
+D:\Python3.8.6-32\lib\site-packages\qt5reactor\core.py:178:_read
+--- <exception caught here> ---
+D:\Python3.8.6-32\lib\site-packages\qt5reactor\core.py:171:_read
+D:\Python3.8.6-32\lib\site-packages\twisted\internet\tcp.py:243:doRead
+D:\Python3.8.6-32\lib\site-packages\twisted\internet\tcp.py:249:_dataReceived
+D:\qttirc0.1\irc.py:2650:dataReceived
+D:\Python3.8.6-32\lib\site-packages\twisted\protocols\basic.py:572:dataReceived
+D:\qttirc0.1\irc.py:2660:lineReceived
+]. Reconnecting...
+*** Host resolution is disabled, using IP (127.0.0.1)
+
+
+* Disconnected because [Failure instance: Traceback: <class 'TypeError'>: cannot unpack non-iterable NoneType object
+D:\Python3.8.6-32\lib\site-packages\twisted\python\log.py:86:callWithContext
+D:\Python3.8.6-32\lib\site-packages\twisted\python\context.py:122:callWithContext
+D:\Python3.8.6-32\lib\site-packages\twisted\python\context.py:85:callWithContext
+D:\Python3.8.6-32\lib\site-packages\qt5reactor\core.py:178:_read
+--- <exception caught here> ---
+D:\Python3.8.6-32\lib\site-packages\qt5reactor\core.py:171:_read
+D:\Python3.8.6-32\lib\site-packages\twisted\internet\tcp.py:243:doRead
+D:\Python3.8.6-32\lib\site-packages\twisted\internet\tcp.py:249:_dataReceived
+D:\qttirc0.1\irc.py:2650:dataReceived
+D:\Python3.8.6-32\lib\site-packages\twisted\protocols\basic.py:572:dataReceived
+D:\qttirc0.1\irc.py:2660:lineReceived
+]. Reconnecting...
+*** Host resolution is disabled, using IP (127.0.0.1)
+
+
+* Disconnected because [Failure instance: Traceback: <class 'TypeError'>: cannot unpack non-iterable NoneType object
+D:\Python3.8.6-32\lib\site-packages\twisted\python\log.py:86:callWithContext
+D:\Python3.8.6-32\lib\site-packages\twisted\python\context.py:122:callWithContext
+D:\Python3.8.6-32\lib\site-packages\twisted\python\context.py:85:callWithContext
+D:\Python3.8.6-32\lib\site-packages\qt5reactor\core.py:178:_read
+--- <exception caught here> ---
+D:\Python3.8.6-32\lib\site-packages\qt5reactor\core.py:171:_read
+D:\Python3.8.6-32\lib\site-packages\twisted\internet\tcp.py:243:doRead
+D:\Python3.8.6-32\lib\site-packages\twisted\internet\tcp.py:249:_dataReceived
+D:\qttirc0.1\irc.py:2650:dataReceived
+D:\Python3.8.6-32\lib\site-packages\twisted\protocols\basic.py:572:dataReceived
+D:\qttirc0.1\irc.py:2660:lineReceived
+]. Reconnecting...

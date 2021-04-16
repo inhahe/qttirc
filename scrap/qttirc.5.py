@@ -82,10 +82,6 @@
 #should save a variable remembering whether any previous network was connected to in this server window, if it was then changednetworks() if all three network name variables don't match the old ones. but not necessarily, if it wasn't previously connected then switchednetworks() should do no harm.
 #make it show underlined letters for hotkeys in context menus
 #tag nicknames in the channel window somehow and allow doubleclick and rightclick on them
-#see if can load a font by filename. otherwise we have to figure out how to install the font on installation of qttirc. (and find out if it's legal to distribute the font with it)
-#modify irc.py again so that it returns nick!ident@host instead of just nick
-#why aren't the IRCcommands showing up with the new irc.py?
-#add the new mirc colors
 
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
@@ -102,7 +98,6 @@ from twisted.internet import reactor
 #from twisted.python import log
 #log.startLogging(sys.stdout)
 import os, time, re, itertools, traceback, copy, os
-from datetime import datetime
 
 invalidwindowsfilenamestems = set(("CON", "PRN", "AUX", "NUL", "COM1", "COM2", "COM3", "COM4", "COM5", "COM6", "COM7", "COM8", "COM9", "LPT1", "LPT2", "LPT3", "LPT4", "LPT5", "LPT6", "LPT7", "LPT8", "LPT9")) #case-insensitive
 invalidwindowsfilenamecharsre = re.compile('[\\\/\:\*\?\"\<\>\u0000-\u001F]')
@@ -150,51 +145,26 @@ class ChannelInputQTextEdit(QTextEdit):
   def keyPressEvent(self, event):
     if event.key() == Qt.Key_Return and not (event.modifiers() and Qt.ShiftModifier):
       #text = str(self.toPlainText()) #doesn't work with unicode input
-      #text = unicode(self.toPlainText()) #this stopped working 
-      text = self.toPlainText().encode(encoding='UTF-8')
+      text = unicode(self.toPlainText())
       self.setPlainText("")
-      if text.lstrip().startswith(b"/"):
+      if text.lstrip().startswith("/"):
         docommand("channelwindow", self.channel.channelwindow, text)
       else:
         if self.channel.network.server.serverconnection:
-          self.channel.network.server.serverconnection.msg(self.channel.name, text)
-          #self.channel.network.server.serverconnection.msg(self.channel.name, text.encode("utf-8"))
-          for msg in text.split(b"\n"):
-            #addline(self.channel.channelwindow, "<%s> %s" % (self.channel.network.server.serverconnection.nickname, msg))
-            addmsg(self.channel.channelwindow.textwindow, self.channel.network.server.serverconnection.nickname, msg)
+          self.channel.network.server.serverconnection.msg(self.channel.name, text.encode("utf-8"))
+          for msg in text.split(r"\n"): #todo: sure this should be a raw string? why did I do that? and if so, we need an escape for "\\" in case we need to do "\\n"
+            addline(self.channel.channelwindow, "<%s> %s" % (self.channel.network.server.serverconnection.nickname, msg))
         else:
           addline(channel.channelwindow, self.channelwindow.channel.name + "." + self.channelwindow.network.name, "* You are not currently connected to a server") #does mIRC log responses like this that would be out of context without showing the input?
     else:
       QTextEdit.keyPressEvent(self, event)
       
-def nickcontextmenu(window, nick, pos):
-  menu = QMenu(self)
-  
-  whoisAction = menu.addAction("&Whois")
-  whoisAction = menu.addAction("&Message")
-  kickAction = menu.addAction("&Kick")
-  kickAction = menu.addAction("Kick w/ reason")
-  banAction = menu.addAction("Ban")
-  banAction = menu.addAction("Kick&ban")
-  banAction = menu.addAction("Kickban w/ reason")
-  pingAction = menu.addAction("CTCP &Ping")
-  timeAction = menu.addAction("CTCP &Time")
-  versionAction = menu.addAction("CTCP &Version")
-  
-  action = menu.exec_(self.mapToGlobal(event.pos()))
-  nick = self.itemAt(event.pos()).text
-  # ctcpMenu = menu.addMenu('&CTCP')
-  # ctcpMenu.addAction("&Ping")
-  # ctcpMenu.addAction("&Time")
-  # ctcpMenu.addAction("&Version")
-  #if action == whoisAction:     
-
 def lookupnetworkconfig(name): #name = network or server name
   name = name.lower()
-  #print(f"name.lower(): {name.lower()}")
-  #print(f"{dir(config.networks)=}")
+  print(f"name.lower(): {name.lower()}")
+  print(f"{dir(config.networks)=}")
   for network_name in dir(config.networks):
-    #print(f"{getattr(config.networks, network_name)=}")
+    print(f"{getattr(config.networks, network_name)=}")
     network_conf = getattr(config.networks, network_name)
     if network_name.lower() == name:
       network_conf.name = network_name
@@ -282,9 +252,9 @@ def docommand(windowtype, window, text): #todo: test from server, channel, and p
     if password:
       password = password.encode("ascii").decode()
     realname = network_config.realname if network_config else config.realname or "qttirc"
-    #print(f"{network_config=}")
+    print(f"{network_config=}")
     network = Network(network_config=network_config)
-    #print(f"{dir(network_config)=}")
+    print(f"{dir(network_config)=}")
     nick = network_config.nicks[0] if network_config and network_config.nicks else config.nicks[0] #in the newest typescript beta this would just be
                                                                                                    #nick = network.config.nicks?.[0] ?? config.nicks[0] or something like that.
                                                                                                    #wish python had that.
@@ -294,7 +264,7 @@ def docommand(windowtype, window, text): #todo: test from server, channel, and p
                            password=network_config.password.encode("ascii").decode() if network_config and network_config.password else None, realname=realname.encode("ascii").decode() if realname else None,
                            network=network, network_config=network_config)
     
-    #print(f"server.nickname: {server.nickname}, server.username: {server.username}, server.password: {server.password}, server.realname: {server.realname}, server.network: {server.network}, server.network_config: {server.network_config}")  #debug
+    print(f"server.nickname: {server.nickname}, server.username: {server.username}, server.password: {server.password}, server.realname: {server.realname}, server.network: {server.network}, server.network_config: {server.network_config}")  #debug
     
     
     window.network = network
@@ -319,7 +289,7 @@ def docommand(windowtype, window, text): #todo: test from server, channel, and p
     window.network.servername = servername
     window.network.serverport = port
     window.network.conn = reactor.connectTCP(servername, port, server)
-    #print("got here 2") #debug
+    print("got here 2") #debug
   elif params[0].lower() == "/load": #todo: should be able to send parameters to the script
     if len(params) != 2:
       addline(window, "* Usage: /load <name>")
@@ -344,31 +314,12 @@ class MessageInputQTextEdit(QTextEdit):
         if self.messagewindow.network.server.serverconnection:
           self.messagewindow.network.server.serverconnection.msg(self.nick, text)
           for msg in text.split(r"\n"):
-            addmsg(self.messagewindow.network.server.serverconnection.nickname, msg)
+            addline(self.messagewindow, "<%s> %s" % (self.messagewindow.network.server.serverconnection.nickname, msg))
         else:
           addline(self.messagewindow, "* You are not currently connected to a server")
     else:
       QTextEdit.keyPressEvent(self, event)
 
-def addmsg(textedit, nick, message):
-  if config.show_timestamp:
-    obj_now = datetime.now()
-    textedit.insertPlainText(f"[{obj_now.hour: >2}:{obj_now.minute: >2}] ")
-  #textedit.insertPlainText("<")
-  textedit.insertHtml(f'&lt;<a style="text-decoration: none; color: inherit" href="{nick}">{nick}</a>&gt; ')
-  #textedit.textCursor().setCharFormat(QTextCharFormat())
-  #charFormat = QTextCharFormat()
-  #charFormat.setAnchorHref(nick)
-  #textedit.textCursor().insertText(nick, charFormat)
-  #textedit.insertPlainText("> ")
-  colorify(textedit, message)
-  #textedit.insertPlainText(message.decode('utf-8'))
-  textedit.insertHtml("<br>")
-    
-def nickevent(*args):
-  #if event.type()==QEvent.contextMenu:
-  #print(f"{args=}")  
-    
 def addline(window, *args): #should probably test if fn is None, not doing that until I have a use case though.
   flag = False
   for arg in args:
@@ -385,7 +336,7 @@ def addline(window, *args): #should probably test if fn is None, not doing that 
   scrollbar = window.textwindow.verticalScrollBar()
   scrollbar.setValue(scrollbar.maximum())
 
-def addlinecolored(window, *args): 
+def addlinecolored(window, *args): #todo: remove the redundancy between addline for server windows and addline for channel windows and addline for message windows
   flag = False
   for arg in args:
     if flag:
@@ -518,24 +469,26 @@ class NicksList(QListWidget):
      self.setStyleSheet("selection-background-color: white") #doesn't work
      #todo: change to global background color selected in config when we make that config option
   def contextMenuEvent(self, event):
-    pass
-
-class ChannelWindowText(QTextEdit):
-  def __init__(self, parent):
-    QTextEdit.__init__(self, parent)
-    self.doc = self.document()
-    self.cursor = QTextCursor(self.doc)
-  def contextMenuEvent(self, e):
-    #print(f"{self.anchorAt(e.pos())}=")
+    menu = QMenu(self)
     
+    whoisAction = menu.addAction("&Whois")
+    whoisAction = menu.addAction("&Message")
+    kickAction = menu.addAction("&Kick")
+    kickAction = menu.addAction("Kick w/ reason")
+    banAction = menu.addAction("Ban")
+    banAction = menu.addAction("Kick&ban")
+    banAction = menu.addAction("Kickban w/ reason")
+    pingAction = menu.addAction("CTCP &Ping")
+    timeAction = menu.addAction("CTCP &Time")
+    versionAction = menu.addAction("CTCP &Version")
     
-  # def mousePressEvent(self, e):
-  #   print(f"{getattr(self.cursorForPosition(e.pos()).currentFrame(), 'nick', None)=}")
-  #   print(f"{self.cursorForPosition(e.pos()).position()=}")
-  #   print(f"{self.cursorForPosition(e.pos()).currentFrame()=}")
-  #   print(f"{self.cursorForPosition(e.pos()).currentFrame().document().toPlainText()=}")
-  #   print(f"{getattr(self.cursor.currentFrame(), 'nick', None)=}")
-  #   print(f"{self.cursor.position()=}")
+    action = menu.exec_(self.mapToGlobal(event.pos()))
+    nick = self.itemAt(event.pos()).text
+    # ctcpMenu = menu.addMenu('&CTCP')
+    # ctcpMenu.addAction("&Ping")
+    # ctcpMenu.addAction("&Time")
+    # ctcpMenu.addAction("&Version")
+    #if action == whoisAction:     
 
 class ChannelWindow(QWidget):
   def __init__(self, channel, network):
@@ -547,7 +500,7 @@ class ChannelWindow(QWidget):
     self.nickslist = NicksList(self)
   
     #self.nickslist.setReadOnly(True) #in case we change this back to a QTextEdit
-    self.textwindow = ChannelWindowText(self)
+    self.textwindow = QTextEdit(self)
     self.textwindow.setReadOnly(True)
     self.textwindow.setFont(font)
     self.textwindow.setStyleSheet("* {position: absolute; bottom: 0}")
@@ -565,8 +518,8 @@ class ChannelWindow(QWidget):
     self.editwindow.setFixedHeight(40)
     self.editwindow.setFocus()
     
-    #print(f"{self.channel.name =}")
-    #print(f"{network.name =}")
+    print(f"{self.channel.name =}")
+    print(f"{network.name =}")
     
     name = getattr(network.serverwindow, "isupportname", None) or getattr(netwrk.serverwindow, "configname", None) or getattr(netwrk.serverwindow, "welcomename", None) or "unknown_network"
     
@@ -589,8 +542,8 @@ class Network(object):
     self.conn = None
     self.server = server
     self.isupport = {}
-    #print("network class")
-    #print(f"self.network_config=")
+    print("network class")
+    print(f"self.network_config=")
     self.network_config = network_config
     self.channels = {}
     self.mynick = mynick
@@ -610,7 +563,7 @@ def splithostmask(hostmask):
     ident, host = "", ""
   return nick, ident, host
 
-colorre = re.compile(b"(?:\x03(?:\\d\\d?(?:,\\d\\d?)?)?)|\x02|\x1f|\x16|\x1d")
+colorre = re.compile("(?:\x03(?:\\d\\d?(?:,\\d\\d?)?)?)|\x02|\x1f|\x16|\x1d")
 #irccolors = ["#FFFFFF",    "#000000", "#00007F",   "#009300",    "#FF0000",   "#7F0000",  "#9C009C",      "#FC7F00",
 #              "#FFFF00",    "#00FC00",   "#009393",   "#00FFFF",     "#0000FC", "#FF00FF",     "#7F7F7F",      "#D2D2D2"]
 irccolors = ((255,255,255), (0, 0, 0), (0, 0, 127), (0, 147, 00), (255, 0, 0), (127, 0, 0), (156, 0, 156), (252, 127, 0),
@@ -630,8 +583,8 @@ def colorify(widget, msg): #should behave just like mIRC.
   origcolorb = QColor(255, 255, 255) #todo: get this value from configuration, if we add a configuration option for this.  also, report a bug re textBackgroundColor. i think qt4 support is discontinuing december 2015.
   curcolorf = origcolorf
   curcolorb = origcolorb
-  for (text, code) in itertools.zip_longest(texts, matches): 
-    widget.insertPlainText(text.decode("UTF-8")) 
+  for (text, code) in itertools.izip_longest(texts, matches): 
+    widget.insertPlainText(text)
     if code:
       if code == "\x02":
         bold = not bold
@@ -708,7 +661,7 @@ def loadscript(scriptfn):
     script = Script(scriptmodule, scriptmodule.Script(networks, serverwindows, docommand))
   except Exception as inst:
     raise #debug
-    #print('Could not load script "%s" from "%s" because of error: %s' % (scriptname, scriptpath, inst.message))
+    print('Could not load script "%s" from "%s" because of error: %s' % (scriptname, scriptpath, inst.message))
     #todo: gui
   return script 
 
@@ -840,8 +793,6 @@ class ServerConnection(irc.IRCClient):
     addline(self.server.network.serverwindow, "* You are now signed on.")
     self.signedon = True
     mainwin.tab_widget.setTabText(mainwin.tab_widget.indexOf(self.server.network.serverwindow), "%s - %s" % (self.server.network.name, self.nickname)) #might be better to store the index
-    #print("here at join channels")
-    #print(self.server.network_config.channels)
     for channel in self.server.network_config.channels:
       self.join(channel) #todo: doesn't work for some reason
      
@@ -850,6 +801,7 @@ class ServerConnection(irc.IRCClient):
     #addline(self.server.network.serverwindow, repr([command, prefix, params])) #debug
     #if command not in ("PING", "PONG", "MODE", "RPL_NAMREPLY", "RPL_ENDOFNAMES", "JOIN", "RPL_TOPIC", "333"): #todo: handle notice and add it to this list. and of course, only show params
     #print(' '.join(params[1:])) #debug
+    
     addline(self.server.network.serverwindow, ' '.join(params[1:]))
       
   def nickChanged(self, newnick):
@@ -862,7 +814,6 @@ class ServerConnection(irc.IRCClient):
       addline(messagewindow, "* Your nick has been changed to " + newnick)
       
   def irc_RPL_WELCOME(self, prefix, params): #actually we should be doing this in irc_RPL_ISUPPORT (NETWORK=). do both? do all irc servers send ISUPPORT NETWORK=?
-    irc.IRCClient.irc_RPL_WELCOME(self, prefix, params)
     if params[1].startswith("Welcome to the "):
       welcomename = params[1].split()[3] #do network names ever have more than one word in them? i'm only capturing one word because i saw both "irc network" and "internet chat relay network" after this word
       oldwelcomename = getattr(self.server.network.serverwindow, "welcomename", None) #should networkname go under network, server or serverconnection? 
@@ -871,8 +822,6 @@ class ServerConnection(irc.IRCClient):
         self.changednetworks(oldwelcomename, welcomename)
        
   def irc_RPL_ISUPPORT(self, prefix, params):
-    irc.IRCClient.irc_RPL_ISUPPORT(self, prefix, params)
-
     for param in params[1:]:
       keyvalue = param.split("=",1)
       if len(keyvalue) == 2:
@@ -883,6 +832,9 @@ class ServerConnection(irc.IRCClient):
         networkname = keyvalue[1] #ISUPPORT NETWORK without an =somevalue will cause an exception but who cares. exceptions are eaten, and why would a server do that?
         oldnetworkname = getattr(self.server.network.serverwindow, "isupportname", None) 
         self.server.network.serverwindow.isupportname=networkname
+        
+        print(f"networkname = ") 
+        
         mainwin.tab_widget.setTabText(self.server.network.serverwindow.tab_index, networkname)
         if oldnetworkname and (networkname.lower() != oldnetworkname.lower()): #calling .lower here is the Right Thing to do, right? 
           self.changednetworks(oldnetworkname, networkname)
@@ -901,7 +853,6 @@ class ServerConnection(irc.IRCClient):
     self.serverwindow.openlogfile = open(self.logfilepath, "a")
     
   def irc_RPL_NAMREPLY(self, prefix, params):
-    #irc.IRCClient.irc_RPL_NAMREPLY(self, prefix, params)
     channelname_lower = irc.irclower(params[2])
     for nick in params[3].split():
       nmo = re.match(r"([^a-zA-Z_[\]{}^`|]*).*", nick) #numbers and - can't be first character of a nick
@@ -913,8 +864,8 @@ class ServerConnection(irc.IRCClient):
       channel.users[nwp_lower] = user
       #self.server.channels[channelname_lower].channelwindow.nickslist.insertHtml(nick + "<br>")
       item = NickItem(nick, user)
-      #print("irc_rpl_namreply") 
-      #print(f"{self.server.network.channels[channelname_lower].channelwindow=}")
+      print("irc_rpl_namreply") 
+      print(f"{self.server.network.channels[channelname_lower].channelwindow=}")
       channel.channelwindow.nickslist.addItem(item)
       channel.users[nwp_lower].item = item
       
@@ -932,7 +883,7 @@ class ServerConnection(irc.IRCClient):
       self.server.network.mynick = newnick
       self.nickname = newnick #do i have to do this? (the answer is yes. not sure why. maybe the server doesn't send a changed nick command when you're not signed on yet so irc.py doesn't update nickname. or maybe something needs to be .decode()d.)
     else:
-      #print(f"{params=}")
+      print(f"{params=}")
       addline(self.server.network.serverwindow, ' * Nick "%s" is already in use' % params[2])#todo: find out where %s is in the params
       
   def irc_ERR_ERRONEUSNICKNAME(self, prefix, params):
@@ -943,12 +894,12 @@ class ServerConnection(irc.IRCClient):
         if self.nickindex < len(self.server.network.nicks):
           newnick = self.server.network.nicks[self.nickindex]
           self.nickindex += 1
-      #print(f"{newnick=}")
+      print(f"{newnick=}")
       addline(self.server.network.serverwindow, '* Nick "%s" is erroneous. Changing nick to "%s"' % (oldnick, newnick)) #todo: use oldnick from params instead of config.
       self.setNick(newnick)
       self.nickname = newnick.decode() #do i have to do this?
     else:
-      #print(f"{params=}")
+      print(f"{params=}")
       addline(self.server.network.serverwindow, ' * Nick "%s" is erroneous' % params[2])#todo: find out where %s is in the params
       
   def kickedFrom(self, channelname, kicker, message):
@@ -1058,7 +1009,7 @@ class ServerConnection(irc.IRCClient):
       addline(messagewindow, "* %s (%s@%s) has quit IRC: %s" % (nick, ident, host, quitmsg))
     
   def joined(self, channelname):
-    #print("joined "+channelname)
+    print("joined "+channelname)
     channelname_lower = irc.irclower(channelname)
     channel = Channel(channelname, self.server.network)
     if channelname_lower in self.server.network.serverwindow.subwindows:
@@ -1069,8 +1020,8 @@ class ServerConnection(irc.IRCClient):
       channel.channelwindow.serverwindow = self.server.network.serverwindow
     addline(channel.channelwindow, "* joined "+ channelname)
     self.server.network.channels[channelname_lower] = channel
-    #print("------------joined------------")
-    #print(f"{self.server.network.channels[channelname_lower].channelwindow=}")
+    print("------------joined------------")
+    print(f"{self.server.network.channels[channelname_lower].channelwindow=}")
     self.server.network.serverwindow.subwindows[channelname_lower] = channelwindow
     app.processEvents()
     sizes = channelwindow.splitter.sizes()
@@ -1078,7 +1029,6 @@ class ServerConnection(irc.IRCClient):
   
   def modeChanged(self, hostmask, channelname, added, modes, params): #problem: displaying mode changes the way i do may mislead users about how one *sets* modes.
     channel = self.server.network.channels.get(irc.irclower(channelname))
-    #print(f"{hostmask=}")
     nick, ident, host = splithostmask(hostmask)
     if channel is not None:
       nmd = {"q": "~", "a": "&", "o": "@", "h": "%", "v": "+"} #is this the way a *real* irc client updates nicks in the nick list upon mode change?
@@ -1109,10 +1059,9 @@ class ServerConnection(irc.IRCClient):
           else:
             mctexts.append("-" + mc[0])
       addline(channel.channelwindow, "* %s sets mode(s): %s" % (nick, ", ".join(mctexts)))
-      user = channel.users.get(irc.irclower(nick), None)
-      if user:
-        if ident: user.ident = ident
-        if host: user.host = host
+      user = channel.users[irc.irclower(nick)]
+      if ident: user.ident = ident
+      if host: user.host = host
     else:
       if channelname == self.nickname:
         mctexts = []
@@ -1135,8 +1084,8 @@ class ServerConnection(irc.IRCClient):
 class ServerFactory(protocol.ReconnectingClientFactory):
   def __init__(self, nickname="qttirc", password=None, username="qttirc", realname=None, network=None, network_config=None):
     self.network = network
-    #print("ServerFactory")
-    #print(f"self.network_config=")
+    print("ServerFactory")
+    print(f"self.network_config=")
     self.network_config = network_config
     self.network.mynick = nickname
     self.nickname = nickname
@@ -1147,7 +1096,7 @@ class ServerFactory(protocol.ReconnectingClientFactory):
     protocol.ReconnectingClientFactory.maxDelay = 10 #no idea what value this should be. 3.5 wasn't slow enough, i was being throttled.
     
   def startedConnecting(self, connector):
-    #print("did this 5") #debug
+    print("did this 5") #debug
     pass
   
   def buildProtocol(self, addr):
@@ -1178,23 +1127,23 @@ class ServerFactory(protocol.ReconnectingClientFactory):
       self.network.serverindex = (self.network.serverindex+1) % len(self.network_config.servers) #todo: make it actually use these values
       addr, port = self.network_config.servers[self.network.serverindex]
 
-      #print( "oldaddr:", oldaddr)
-      #print ("oldport:", oldport)
-      #print ("addr:", addr)
-      #print( "port:", port)
+      print( "oldaddr:", oldaddr)
+      print ("oldport:", oldport)
+      print ("addr:", addr)
+      print( "port:", port)
 
       addline(self.network.serverwindow, "* Connection to (%s, %d) failed. Connecting to (%s, %d)..." % (oldaddr, oldport, addr, port)) #todo: add reason for fail
 
       
-      #print("did this 4") #debug
+      print("did this 4") #debug
       
     #reactor.callLater(config.reconnectdelay, reactor.connectTCP, addr.encode("ascii"), port, self)
       reactor.connectTCP(addr, port, self) #is this feasible? i don't know a better way to do this. connector.connect() apparently doesn't take server/port as arguments.
     
     else:
       
-      #print("did this 3") #debug
-      #print(f"{dir(self)=}")
+      print("did this 3") #debug
+      print(f"{dir(self)=}")
       addline(self.network.serverwindow, f"* Connection to ({self.network.servername}, {self.network.serverport}) failed. Reconnecting...") #todo: add reason for fail
         
     ##why did this break #todo: fix
@@ -1269,18 +1218,16 @@ if __name__ == '__main__':
   serverwindow = ServerWindow(network=None)
   serverwindows.append(serverwindow)  
     
-  #reactor.run()
+  reactor.run()
 
 if __name__=="__main__":
-  # for name in dir(ServerConnection):
-  #   if not name.startswith('_'):
-  #     obj = getattr(ServerConnection, name)
-  #     if callable(obj):
-  #       setattr(ServerConnection, name, makefunc(name, obj))
+  for name in dir(ServerConnection):
+    if not name.startswith('_'):
+      obj = getattr(ServerConnection, name)
+      if callable(obj):
+        setattr(ServerConnection, name, makefunc(name, obj))
 
   for command in config.performonstartup:
     docommand("serverwindow", serverwindow, command)
 
   identf = runidentd() #todo: set ident in config file. also warn if can't open port for listening. 
-
-  reactor.run()

@@ -59,7 +59,7 @@ MAX_COMMAND_LENGTH = 512
 
 CHANNEL_PREFIXES = '&#!+'
 
-irclowertranslations = { #modification by inhahe
+irclowertranslations = {
     "ascii":          str.maketrans(string.ascii_uppercase,
                                        string.ascii_lowercase),
     "rfc1549":        str.maketrans(string.ascii_uppercase + "\x7B\x7C\x7D\x7E",
@@ -69,10 +69,10 @@ irclowertranslations = { #modification by inhahe
 }
 
 def irclower(text):
-  trans = irclowertranslations["rfc1549"] #modification by inhahe
+  trans = irclowertranslations["rfc1549"]
   return text.translate(trans)    
 
-usersplit = re.compile("(?P<nick>.*?)!(?P<ident>.*?)@(?P<host>.*)").match #modification by inhahe
+usersplit = re.compile("(?P<nick>.*?)!(?P<ident>.*?)@(?P<host>.*)").match
 
 class IRCBadMessage(Exception):
     pass
@@ -133,7 +133,6 @@ def split(str, length=80):
 
     @return: C{list} of C{str}
     """
-    str = str.decode("ascii") #modification by inhahe
     return [chunk
             for line in str.split('\n')
             for chunk in textwrap.wrap(line, length)]
@@ -183,14 +182,12 @@ class _CommandDispatcherMixin(object):
         """
         Perform actual command dispatch.
         """
-                    
         def _getMethodName(command):
             return '%s_%s' % (self.prefix, command)
 
         def _getMethod(name):
             return getattr(self, _getMethodName(name), None)
 
-      
         method = _getMethod(commandName)
         if method is not None:
             return method(*args)
@@ -459,10 +456,8 @@ class IRC(protocol.Protocol):
         @param params: A list of parameters to call the function with.
         @type params: L{list}
         """
-        
-        self.IRCcommand(command, pnefix, params) #modification by inhahe 
 
-        
+        self.IRCcommand(command, prefix, params) #modification by inhahe
         method = getattr(self, "irc_%s" % command, None)
         try:
             if method is not None:
@@ -1487,7 +1482,7 @@ class IRCClient(basic.LineReceiver):
         """
         Called when my nick has been changed.
         """
-        self.nickname = nick
+        self.nickname = nick.encode("ascii").decode()
 
 
     ### Things I observe other people doing in a channel.
@@ -1828,7 +1823,7 @@ class IRCClient(basic.LineReceiver):
             self.sendLine("PASS %s" % self.password)
         self.setNick(nickname)
         if self.username is None:
-            self.username = nickname
+            self.username = nickname.encode("ascii").decode()
         self.sendLine("USER %s %s %s :%s" % (self.username, hostname, servername, self.realname))
 
 
@@ -1950,7 +1945,7 @@ class IRCClient(basic.LineReceiver):
         @returns: A string that is in some way different from the nickname.
         @rtype: C{str}
         """
-        return nickname + '_'
+        return (nickname.decode() if type(nickname) is bytes else nickname) + '_'
 
 
     def irc_ERR_ERRONEUSNICKNAME(self, prefix, params):
@@ -1981,7 +1976,8 @@ class IRCClient(basic.LineReceiver):
         """
         self.hostname = prefix
         self._registered = True
-        self.nickname = self._attemptedNick
+        self.nickname = self._attemptedNick.encode("ascii").decode()
+        print("signed on") #debug
         self.signedOn()
         self.startHeartbeat()
 
@@ -2661,10 +2657,8 @@ class IRCClient(basic.LineReceiver):
         line = lowDequote(line)
         try:
             prefix, command, params = parsemsg(line)
-            
             if command in numeric_to_symbolic:
                 command = numeric_to_symbolic[command]
-            
             self.handleCommand(command, prefix, params)
         except IRCBadMessage:
             self.badMessage(line, *sys.exc_info())
@@ -2717,12 +2711,8 @@ class IRCClient(basic.LineReceiver):
         @param params: A list of parameters to call the function with.
         @type params: L{list}
         """
-        
-        self.IRCcommand(command, prefix, params) #modification by inhahe 
-
-        
+        self.IRCcommand(command, prefix, params) #modification by inhahe
         method = getattr(self, "irc_%s" % command, None)
-        
         try:
             if method is not None:
                 method(prefix, params)
