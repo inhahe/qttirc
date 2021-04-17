@@ -133,7 +133,7 @@ def split(str, length=80):
 
     @return: C{list} of C{str}
     """
-    #str = str.decode("ascii") #modification by inhahe
+    str = str.decode("ascii") #modification by inhahe
     return [chunk
             for line in str.split('\n')
             for chunk in textwrap.wrap(line, length)]
@@ -1990,30 +1990,30 @@ class IRCClient(basic.LineReceiver):
         """
         Called when a user joins a channel.
         """
-        nick = prefix.split('!')[0] #all commentings out of `nick = prefix.split('!')[0]` and replacings of `nick` with `user` or `prefix` further down are modifications by inhahe
+        nick = prefix.split('!')[0]
         channel = params[-1]
         if nick == self.nickname:
             self.joined(channel)
         else:
-            self.userJoined(prefix, channel)
+            self.userJoined(nick, channel)
 
     def irc_PART(self, prefix, params):
         """
         Called when a user leaves a channel.
         """
-        #nick = prefix.split('!')[0]
+        nick = prefix.split('!')[0]
         channel = params[0]
         if nick == self.nickname:
             self.left(channel)
         else:
-            self.userLeft(prefix, channel)
+            self.userLeft(nick, channel)
 
     def irc_QUIT(self, prefix, params):
         """
         Called when a user has quit.
         """
-        #nick = prefix.split('!')[0]
-        self.userQuit(prefix, params[0])
+        nick = prefix.split('!')[0]
+        self.userQuit(nick, params[0])
 
 
     def irc_MODE(self, user, params):
@@ -2103,50 +2103,50 @@ class IRCClient(basic.LineReceiver):
         """
         Called when a user changes their nickname.
         """
-        #nick = prefix.split('!', 1)[0]
+        nick = prefix.split('!', 1)[0]
         if nick == self.nickname:
             self.nickChanged(params[0])
         else:
-            self.userRenamed(prefix, params[0])
+            self.userRenamed(nick, params[0])
 
     def irc_KICK(self, prefix, params):
         """
         Called when a user is kicked from a channel.
         """
-        #kicker = prefix.split('!')[0]
+        kicker = prefix.split('!')[0]
         channel = params[0]
         kicked = params[1]
         message = params[-1]
         if kicked.lower() == self.nickname.lower():
             # Yikes!
-            self.kickedFrom(channel, prefix, message)
+            self.kickedFrom(channel, kicker, message)
         else:
-            self.userKicked(kicked, channel, prefix, message)
+            self.userKicked(kicked, channel, kicker, message)
 
     def irc_TOPIC(self, prefix, params):
         """
         Someone in the channel set the topic.
         """
-        #user = prefix.split('!')[0]
+        user = prefix.split('!')[0]
         channel = params[0]
         newtopic = params[1]
-        self.topicUpdated(prefix, channel, newtopic)
+        self.topicUpdated(user, channel, newtopic)
 
     def irc_RPL_TOPIC(self, prefix, params):
         """
         Called when the topic for a channel is initially reported or when it
         subsequently changes.
         """
-        #user = prefix.split('!')[0]
+        user = prefix.split('!')[0]
         channel = params[1]
         newtopic = params[2]
-        self.topicUpdated(prefix, channel, newtopic)
+        self.topicUpdated(user, channel, newtopic)
 
     def irc_RPL_NOTOPIC(self, prefix, params):
-        #user = prefix.split('!')[0]
+        user = prefix.split('!')[0]
         channel = params[1]
         newtopic = ""
-        self.topicUpdated(prefix, channel, newtopic)
+        self.topicUpdated(user, channel, newtopic)
 
     def irc_RPL_MOTDSTART(self, prefix, params):
         if params[-1].startswith("- "):
@@ -2252,8 +2252,8 @@ class IRCClient(basic.LineReceiver):
         self.action(user, channel, data)
 
     def ctcpQuery_PING(self, user, channel, data):
-        #nick = user.split('!')[0]
-        self.ctcpMakeReply(user, [("PING", data)])
+        nick = user.split('!')[0]
+        self.ctcpMakeReply(nick, [("PING", data)])
 
     def ctcpQuery_FINGER(self, user, channel, data):
         if data is not None:
@@ -2267,8 +2267,8 @@ class IRCClient(basic.LineReceiver):
         else:
             reply = str(self.fingerReply)
 
-        #nick = user.split('!')[0]
-        self.ctcpMakeReply(user, [('FINGER', reply)])
+        nick = user.split('!')[0]
+        self.ctcpMakeReply(nick, [('FINGER', reply)])
 
     def ctcpQuery_VERSION(self, user, channel, data):
         if data is not None:
@@ -2276,8 +2276,8 @@ class IRCClient(basic.LineReceiver):
                                % (user, data))
 
         if self.versionName:
-            #nick = user.split('!')[0]
-            self.ctcpMakeReply(user, [('VERSION', '%s:%s:%s' %
+            nick = user.split('!')[0]
+            self.ctcpMakeReply(nick, [('VERSION', '%s:%s:%s' %
                                        (self.versionName,
                                         self.versionNum or '',
                                         self.versionEnv or ''))])
@@ -2287,12 +2287,12 @@ class IRCClient(basic.LineReceiver):
             self.quirkyMessage("Why did %s send '%s' with a SOURCE query?"
                                % (user, data))
         if self.sourceURL:
-            #nick = user.split('!')[0]
+            nick = user.split('!')[0]
             # The CTCP document (Zeuge, Rollo, Mesander 1994) says that SOURCE
             # replies should be responded to with the location of an anonymous
             # FTP server in host:directory:file format.  I'm taking the liberty
             # of bringing it into the 21st century by sending a URL instead.
-            self.ctcpMakeReply(user, [('SOURCE', self.sourceURL),
+            self.ctcpMakeReply(nick, [('SOURCE', self.sourceURL),
                                       ('SOURCE', None)])
 
     def ctcpQuery_USERINFO(self, user, channel, data):
@@ -2300,8 +2300,8 @@ class IRCClient(basic.LineReceiver):
             self.quirkyMessage("Why did %s send '%s' with a USERINFO query?"
                                % (user, data))
         if self.userinfo:
-            #nick = user.split('!')[0]
-            self.ctcpMakeReply(user, [('USERINFO', self.userinfo)])
+            nick = user.split('!')[0]
+            self.ctcpMakeReply(nick, [('USERINFO', self.userinfo)])
 
     def ctcpQuery_CLIENTINFO(self, user, channel, data):
         """
@@ -2312,7 +2312,7 @@ class IRCClient(basic.LineReceiver):
         If an argument is provided, provide human-readable help on
         the usage of that tag.
         """
-        #nick = user.split('!')[0]
+        nick = user.split('!')[0]
         if not data:
             # XXX: prefixedMethodNames gets methods from my *class*,
             # but it's entirely possible that this *instance* has more
@@ -2320,33 +2320,33 @@ class IRCClient(basic.LineReceiver):
             names = sorted(reflect.prefixedMethodNames(self.__class__,
                                                        'ctcpQuery_'))
 
-            self.ctcpMakeReply(user, [('CLIENTINFO', ' '.join(names))])
+            self.ctcpMakeReply(nick, [('CLIENTINFO', ' '.join(names))])
         else:
             args = data.split()
             method = getattr(self, 'ctcpQuery_%s' % (args[0],), None)
             if not method:
-                self.ctcpMakeReply(user, [('ERRMSG',
+                self.ctcpMakeReply(nick, [('ERRMSG',
                                            "CLIENTINFO %s :"
                                            "Unknown query '%s'"
                                            % (data, args[0]))])
                 return
             doc = getattr(method, '__doc__', '')
-            self.ctcpMakeReply(user, [('CLIENTINFO', doc)])
+            self.ctcpMakeReply(nick, [('CLIENTINFO', doc)])
 
 
     def ctcpQuery_ERRMSG(self, user, channel, data):
         # Yeah, this seems strange, but that's what the spec says to do
         # when faced with an ERRMSG query (not a reply).
-        #nick = user.split('!')[0]
-        self.ctcpMakeReply(user, [('ERRMSG',
+        nick = user.split('!')[0]
+        self.ctcpMakeReply(nick, [('ERRMSG',
                                    "%s :No error has occurred." % data)])
 
     def ctcpQuery_TIME(self, user, channel, data):
         if data is not None:
             self.quirkyMessage("Why did %s send '%s' with a TIME query?"
                                % (user, data))
-        #nick = user.split('!')[0]
-        self.ctcpMakeReply(user,
+        nick = user.split('!')[0]
+        self.ctcpMakeReply(nick,
                            [('TIME', ':%s' %
                              time.asctime(time.localtime(time.time())))])
 
@@ -2373,8 +2373,8 @@ class IRCClient(basic.LineReceiver):
             data = data[len(dcctype)+1:]
             handler(user, channel, data)
         else:
-            #nick = user.split('!')[0]
-            self.ctcpMakeReply(user, [('ERRMSG',
+            nick = user.split('!')[0]
+            self.ctcpMakeReply(nick, [('ERRMSG',
                                        "DCC %s :Unknown DCC type '%s'"
                                        % (data, dcctype))])
             self.quirkyMessage("%s offered unknown DCC type %s"

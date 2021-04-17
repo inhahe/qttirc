@@ -87,6 +87,8 @@
 #why aren't the IRCcommands showing up with the new irc.py?
 #add the new mirc colors
 #keep track of nick changes in message windows
+#have the quit message on closing the app be something other than "Read error"
+#hangs when it tries to reconnect too many times
 
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
@@ -350,15 +352,15 @@ class MessageInputQTextEdit(QTextEdit):
     if event.key() == Qt.Key_Return and not (event.modifiers() and Qt.ShiftModifier):
       text = str(self.toPlainText())
       self.setPlainText("")
-      if text.lstrip().startswith("/"):
-        docommand("serverwindow", self.messagewindow, text)
-      else:
-        if self.messagewindow.network.server.serverconnection:
-          self.messagewindow.network.server.serverconnection.msg(self.nick, text)
-          for msg in text.split(r"\n"):
-            addmsg(self.messagewindow.network.server.serverconnection.nickname, msg)
+      for textline in text.split(r"\n"):
+        if textline.lstrip().startswith("/"):
+          docommand("messagewindow", self.messagewindow, textline)
         else:
-          addline(self.messagewindow, "* You are not currently connected to a server")
+          if self.messagewindow.network.server.serverconnection:
+            self.messagewindow.network.server.serverconnection.msg(self.messagewindow.nick, text)
+            addmsg(self.messagewindow.textwindow, self.messagewindow.network.server.serverconnection.nickname, textline)
+          else:
+            addline(self.messagewindow, "* You are not currently connected to a server")
     else:
       QTextEdit.keyPressEvent(self, event)
 
@@ -529,7 +531,7 @@ class NicksList(QListWidget):
      self.setSortingEnabled(True)
      self.channelwindow = channelwindow
      self.setFont(font)
-     self.setStyleSheet("selection-background-color: white") #doesn't work
+     #self.setStyleSheet("selection-background-color: white") #doesn't work
      #todo: change to global background color selected in config when we make that config option
   def contextMenuEvent(self, event):
     item = self.itemAt(event.pos())
@@ -546,7 +548,7 @@ class ChannelWindowText(QTextEdit):
   def contextMenuEvent(self, e):
     nick = self.anchorAt(e.pos())
     if nick.startswith("nick:"):
-      nickcontextmenu(self.parent, nick[5:], e.pos())
+      nickcontextmenu(self.parent, nick[5:], e.globalPos())
     
   # def mousePressEvent(self, e):
   #   print(f"{getattr(self.cursorForPosition(e.pos()).currentFrame(), 'nick', None)=}")
@@ -633,11 +635,20 @@ colorre = re.compile(b"(?:\x03(?:\\d\\d?(?:,\\d\\d?)?)?)|\x02|\x1f|\x16|\x1d")
 #irccolors = ["#FFFFFF",    "#000000", "#00007F",   "#009300",    "#FF0000",   "#7F0000",  "#9C009C",      "#FC7F00",
 #              "#FFFF00",    "#00FC00",   "#009393",   "#00FFFF",     "#0000FC", "#FF00FF",     "#7F7F7F",      "#D2D2D2"]
 irccolors = ((255,255,255), (0, 0, 0), (0, 0, 127), (0, 147, 00), (255, 0, 0), (127, 0, 0), (156, 0, 156), (252, 127, 0),
-             (255,255,0), (0, 252, 0), (0, 147, 147), (0, 255, 255), (0, 0, 252), (255, 0, 255), (127, 127, 127), (210, 210, 210))
+             (255,255,0), (0, 252, 0), (0, 147, 147), (0, 255, 255), (0, 0, 252), (255, 0, 255), (127, 127, 127), (210, 210, 210),
+             (71,0,0), (71, 33, 0), (71, 71, 0), (50, 71, 0), (0, 71, 0), (0, 71, 44), (0, 71, 71), (0, 39, 71), (0, 0, 71), (46, 0, 71), (71, 0, 71), (71, 0, 42),
+             (116, 0, 0), (116, 58, 0), (116, 116, 0), (81, 116, 0), (0, 116, 0), (0, 116, 73), (0, 116, 116), (0, 64, 116), (0, 0, 116), (75, 0, 116), (116, 0, 116), (116, 0, 69),
+             (181, 0, 0), (181, 99, 0), (181, 181, 0), (125, 181, 0), (0, 181, 0), (0, 181, 113), (0, 181, 181), (0, 99, 181), (0, 0, 181), (117, 0, 181), (181, 0, 181), (181, 0, 107),
+             (255, 0, 0), (255, 140, 0), (255, 255, 0), (178, 255, 0), (0, 255, 0), (0, 255, 160), (0, 255, 255), (0, 140, 255), (0, 0, 255), (165, 0, 255), (255, 0, 255), (255, 0, 152),
+             (255, 89, 89), (255, 180, 89), (255, 255, 113), (207, 255, 96), (111, 255, 111), (111, 255, 201), (109, 255, 255), (89, 180, 255), (89, 89, 255), (196, 89, 255), (255, 102, 255), (255, 89, 188),
+             (255, 156, 156), (255, 211, 156), (255, 255, 156), (226, 255, 156), (156, 255, 156), (156, 255, 219), (156, 255, 255), (156, 211, 255), (156, 156, 255), (220, 156, 255), (255, 156, 255), (255, 148, 211),
+             (0, 0, 0), (19, 19, 19), (40, 40, 40), (54, 54, 54), (77, 77, 77), (101, 101, 101), (129, 129, 129), (159, 159, 159), (188, 188, 188), (226, 226, 226), (255, 255, 255))                                                  
+             
 #irccolors = ["White", "Black", "Navy Blue", "Green", "Red", "Brown", "Purple", "Olive", "Yellow", "Lime Green", "Teal", "Aqua Light", "Royal Blue", "Hot Pink", "Dark Gray", "Light Gray"]
 # actual names of colors from http://www.ircbeginner.com/ircinfo/colors.html - untested
 
 def colorify(widget, msg): #should behave just like mIRC.
+  msg = msg.encode('utf-8')
   matches = re.findall(colorre, msg)
   texts = re.split(colorre, msg)
   bold = False
@@ -650,18 +661,18 @@ def colorify(widget, msg): #should behave just like mIRC.
   curcolorf = origcolorf
   curcolorb = origcolorb
   for (text, code) in itertools.zip_longest(texts, matches): 
-    widget.insertPlainText(text.decode("UTF-8")) 
+    widget.insertPlainText(text.decode("UTF-8"))
     if code:
-      if code == "\x02":
+      if code == b"\x02":
         bold = not bold
         widget.setFontWeight(QFont.Bold if bold else QFont.Normal) 
-      elif code == "\x1f":
+      elif code == b"\x1f":
         underline = not underline
         widget.setFontUnderline(underline)
-      elif code == "\x1d":
+      elif code == b"\x1d":
         italics = not italics
         widget.setFontItalic(italics)
-      elif code == "\x16":
+      elif code == b"\x16":
         reversed = not reversed
         if reversed:
           widget.setTextColor(origcolorb)
@@ -669,19 +680,25 @@ def colorify(widget, msg): #should behave just like mIRC.
         else:
           widget.setTextColor(curcolorf)
           widget.setTextBackgroundColor(curcolorb)
-      elif code[0] == "\x03":
-        if code == "\x03":
+      elif code[0] == 3: #weird python 3 quirk, b"\x03"[0] == 3
+        if code == b"\x03": 
           curcolorf = origcolorf
           curcolorb = origcolorb
           if not reversed:
             widget.setTextColor(curcolorf)
             widget.setTextBackgroundColor(curcolorb)
         else:
-          codes = code[1:].split(",")
-          curcolorf = QColor(*irccolors[int(codes[0])])
+          codes = code[1:].split(b",")
+          if codes[0] == b"99":
+            curcolorf = QColor(origcolorf)
+          else:
+            curcolorf = QColor(*irccolors[int(codes[0])])
           widget.setTextColor(curcolorf)
           if len(codes) == 2:
-            curcolorb = QColor(*irccolors[int(codes[1])])
+            if codes[1] == b"99":
+              curcolorb = QColor(origcolorb)
+            else:
+              curcolorb = QColor(*irccolors[int(codes[1])])
             widget.setTextBackgroundColor(curcolorb)
   widget.setTextColor(origcolorf)
   widget.setTextBackgroundColor(origcolorb)
@@ -827,6 +844,12 @@ class MainWindow(QMainWindow):
   #  sys.exit()
     
   def closeEvent(self, event):
+    for network in networks:
+      if network.server:
+        network.server.serverconnection.quit("Client exiting") #todo: make quit message configurable
+        network.server.serverconnection.transport.doWrite()
+    #if reactor.running:
+    #  reactor.stop() #hangs for some reason
     QCoreApplication.instance().quit()
     
   def doMinimizeTab(self):
@@ -1023,7 +1046,8 @@ class ServerConnection(irc.IRCClient):
 
   def privmsg(self, fromhostmask, msg):
     nick, ident, host = splithostmask(fromhostmask)
-    msg = QString.fromUtf8(msg)
+    #msg = QString.fromUtf8(msg)
+    #msg = msg.decode("utf-8")
     fromnick_lower = irc.irclower(nick)
     if fromnick_lower not in self.server.network.messagewindows:
       self.server.network.messagewindows[fromnick_lower] = MessageWindow(self.server.network, nick)
@@ -1034,7 +1058,8 @@ class ServerConnection(irc.IRCClient):
   def chanmsg(self, fromhostmask, target, msg):
     target_lower = irc.irclower(target)
     nick, ident, host = splithostmask(fromhostmask)
-    msg = QString.fromUtf8(msg)
+    #msg = QString.fromUtf8(msg)
+    #msg = msg.decode("utf-8")
     if target_lower in self.server.network.channels:
       channel = self.server.network.channels[target_lower]
       nick, ident, host = splithostmask(fromhostmask)
@@ -1053,7 +1078,7 @@ class ServerConnection(irc.IRCClient):
     channels = self.server.network.channels
     channel = channels[irc.irclower(channelname)]
     addline(channel.channelwindow, "* %s (%s@%s) has joined %s" % (nick, ident, host, channel.name))
-    user = network.users.get(nick_lower, User(nick))
+    user = self.server.network.users.get(nick_lower, User(nick))
     network.users[nick_lower] = user
     #channel.users[self.conn.nick.lower()] = user #wtf why am i setting it to myself, fixing this
     item = NickItem(nick, user)
@@ -1098,10 +1123,10 @@ class ServerConnection(irc.IRCClient):
     self.server.network.channels[channelname_lower] = channel
     #print("------------joined------------")
     #print(f"{self.server.network.channels[channelname_lower].channelwindow=}")
-    self.server.network.serverwindow.subwindows[channelname_lower] = channelwindow
+    self.server.network.serverwindow.subwindows[channelname_lower] = channel.channelwindow
     app.processEvents()
     sizes = channelwindow.splitter.sizes()
-    channelwindow.splitter.setSizes([sum(sizes)-150, 150])
+    channel.channelwindow.splitter.setSizes([sum(sizes)-150, 150])
   
   def modeChanged(self, hostmask, channelname, added, modes, params): #problem: displaying mode changes the way i do may mislead users about how one *sets* modes.
     channel = self.server.network.channels.get(irc.irclower(channelname))
@@ -1243,17 +1268,19 @@ class identd(protocol.Protocol):
 
 
 if __name__ == '__main__':
-
-  def stop():
-    print("Stop")
-    if reactor.running:
-      reactor.stop()
+ 
+  # def stop():
+  #   print("got here 1")
+  #   for network in networks:
+  #     network.server.serverconnection.quit("Client exiting") #todo: make quit message configurable
+  #   if reactor.running:
+  #     reactor.stop()
   
-  
+  #app.aboutToQuit.connect(stop)
   
   #window = MainWindow()
   #window.show()
-  app.lastWindowClosed.connect(stop)
+  #app.lastWindowClosed.connect(stop)
  # reactor.run()
   
   #from twistedclient import SocketClientFactory
@@ -1269,17 +1296,13 @@ if __name__ == '__main__':
 #  os.environ["PATH"] = os.environ["PATH"] + ";" + path
 
   #app.lastWindowClosed.connect(app.quit)
-  
+  #app.setStyleSheet("QListView::item:selected {background: #ffffff; color: black; border: none}")
   mainwin = MainWindow()
   #mainwin.mnunewclient.connect(mainwin.mnunewclient, SIGNAL('triggered()'), newclient)
 #  mainwin.showMaximized()
-  
- 
-  
-  ding = QSound(r"sounds\01_ECHOBEL3.wav") #todo: find out how to get directory of this running python file and os.join that with sounds\whatever
-  
-  
     
+  ding = QSound(r"sounds\01_ECHOBEL3.wav") #todo: find out how to get directory of this running python file and os.join that with sounds\whatever
+      
   #mainwindow = MainWindow()
   
   #mainwindow.showMaximized()
@@ -1298,7 +1321,6 @@ if __name__ == '__main__':
     
   #reactor.run()
 
-if __name__=="__main__":
   # for name in dir(ServerConnection):
   #   if not name.startswith('_'):
   #     obj = getattr(ServerConnection, name)
