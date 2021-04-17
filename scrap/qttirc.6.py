@@ -86,7 +86,6 @@
 #modify irc.py again so that it returns nick!ident@host instead of just nick
 #why aren't the IRCcommands showing up with the new irc.py?
 #add the new mirc colors
-#keep track of nick changes in message windows
 
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
@@ -164,7 +163,7 @@ class ChannelInputQTextEdit(QTextEdit):
             #addline(self.channel.channelwindow, "<%s> %s" % (self.channel.network.server.serverconnection.nickname, msg))
             addmsg(self.channel.channelwindow.textwindow, self.channel.network.server.serverconnection.nickname, msg)
         else:
-          addline(channel.channelwindow, "* You are not currently connected to a server") #does mIRC log responses like this that would be out of context without showing the input?
+          addline(channel.channelwindow, self.channelwindow.channel.name + "." + self.channelwindow.network.name, "* You are not currently connected to a server") #does mIRC log responses like this that would be out of context without showing the input?
     else:
       QTextEdit.keyPressEvent(self, event)
       
@@ -182,8 +181,7 @@ def nickcontextmenu(window, nick, pos):
   timeAction = menu.addAction("CTCP &Time")
   versionAction = menu.addAction("CTCP &Version")
   
-  #action = menu.exec_(menu.mapToGlobal(pos))
-  action = menu.exec_(pos)
+  action = menu.exec_(menu.mapToGlobal(pos))
   
   # ctcpMenu = menu.addMenu('&CTCP')
   # ctcpMenu.addAction("&Ping")
@@ -191,14 +189,6 @@ def nickcontextmenu(window, nick, pos):
   # ctcpMenu.addAction("&Version")
   if action == whoisAction:
     window.network.server.serverconnection.whois(nick)
-  elif action == messageAction:
-    nick = irc.irclower(nick)
-    subwindow = window.serverwindow.subwindows.get(nick, None)
-    if subwindow:
-      mainwin.tab_widget.setCurrentIndex(subwindow.tab_index)
-    else:
-      subwindow = window.serverwindow.subwindows[irc.irclower(nick)] = MessageWindow(window.network, nick)
-    mainwin.tab_widget.setCurrentIndex(subwindow.tab_index)
 
 def lookupnetworkconfig(name): #name = network or server name
   name = name.lower()
@@ -216,13 +206,12 @@ def lookupnetworkconfig(name): #name = network or server name
         return network_conf, False
   return None, True
 
-# def log(windowtype, window, text):
-#   network_name = getattr(network.serverwindow, "isupportname", None) or getattr(netwrk.serverwindow, "configname", None) or getattr(netwrk.serverwindow, "welcomename", None) or "unknown_network"
-#   if windowtype == "serverwindow":
-#     filestem = network_name
-#   elif windowtype == "channelwindow":
-#     filestem = window.channel.name + "." + network_name
-#   filepath = os.path.join(logspath, filestem + ".log")
+def log(windowtype, window, text):
+  if windowtype == "serverwindow":
+    filestem = window.server.network.name
+  elif windowtype == "channelwindow":
+    filestem = window.channel.name + "." + window.server.network.name
+  filepath = os.path.join(logspath, filestem + ".log")
 
 def docommand(windowtype, window, text): #todo: test from server, channel, and privmsg
   params = text.split()   
@@ -413,7 +402,7 @@ class MessageWindow(QWidget):
     QWidget.__init__(self)
     self.network = network
     self.nick = nick
-    self.tab_index = mainwin.tab_widget.addTab(self, nick)
+    mainwin.tab_widget.addTab(self, nick)
     self.textwindow = QTextEdit(self)
     self.textwindow.setReadOnly(True)
     self.textwindow.setFont(font)
@@ -431,11 +420,7 @@ class MessageWindow(QWidget):
     #self.editwindow.setSizePolicy(sizepolicy)
     self.editwindow.setFixedHeight(40)
     self.editwindow.setFocus()
-    #print(f"{network.name=}, {nick=}")
-    
-    network_name = getattr(network.serverwindow, "isupportname", None) or getattr(network.serverwindow, "configname", None) or getattr(network.serverwindow, "welcomename", None) or "unknown_network"
-    self.logfilepath = getlogfilepath(nick, network_name)
-           
+    self.logfilepath = getlogfilepath(nick, network.name)
     self.openlogfile = open(self.logfilepath, "a")
   def __del__(self):
     self.openlogfile.close()
@@ -477,8 +462,7 @@ class ServerWindow(QWidget):
     self.editwindow.setFixedHeight(40)
     self.editwindow.setFocus()
     self.serverwindow = self
-    network_name = network.network_config.name if network and network.network_config else ""
-    self.logfilepath = getlogfilepath("status", network_name if network else "")
+    self.logfilepath = getlogfilepath("status", network.name if network else "")
     self.openlogfile = open(self.logfilepath, "a")
   def __del__(self):
     self.openlogfile.close()
@@ -532,11 +516,9 @@ class NicksList(QListWidget):
      self.setStyleSheet("selection-background-color: white") #doesn't work
      #todo: change to global background color selected in config when we make that config option
   def contextMenuEvent(self, event):
-    item = self.itemAt(event.pos())
-    if item:
-      nick = item.user.nick
-      nickcontextmenu(self.channelwindow, nick, event.globalPos())
-      
+    nick = self.itemAt(event.pos()).text()
+    nickcontextmenu(self.channelwindow, nick, event.pos())
+
 class ChannelWindowText(QTextEdit):
   def __init__(self, parent):
     QTextEdit.__init__(self, parent)
@@ -587,7 +569,7 @@ class ChannelWindow(QWidget):
     #print(f"{self.channel.name =}")
     #print(f"{network.name =}")
     
-    name = getattr(network.serverwindow, "isupportname", None) or getattr(network.serverwindow, "configname", None) or getattr(network.serverwindow, "welcomename", None) or "unknown_network"
+    name = getattr(network.serverwindow, "isupportname", None) or getattr(netwrk.serverwindow, "configname", None) or getattr(netwrk.serverwindow, "welcomename", None) or "unknown_network"
     
     self.logfilepath = getlogfilepath(self.channel.name, network.serverwindow.isupportname or name)
     
@@ -858,9 +840,7 @@ class ServerConnection(irc.IRCClient):
     #print "signed on"
     addline(self.server.network.serverwindow, "* You are now signed on.")
     self.signedon = True
-    network = self.server.network
-    network_name = getattr(network.serverwindow, "isupportname", None) or getattr(network.serverwindow, "configname", None) or getattr(network.serverwindow, "welcomename", None) or "unknown_network"
-    mainwin.tab_widget.setTabText(mainwin.tab_widget.indexOf(self.server.network.serverwindow), "%s - %s" % (network_name, self.nickname)) #might be better to store the index
+    mainwin.tab_widget.setTabText(mainwin.tab_widget.indexOf(self.server.network.serverwindow), "%s - %s" % (self.server.network.name, self.nickname)) #might be better to store the index
     #print("here at join channels")
     #print(self.server.network_config.channels)
     for channel in self.server.network_config.channels:
@@ -872,13 +852,7 @@ class ServerConnection(irc.IRCClient):
     #if command not in ("PING", "PONG", "MODE", "RPL_NAMREPLY", "RPL_ENDOFNAMES", "JOIN", "RPL_TOPIC", "333"): #todo: handle notice and add it to this list. and of course, only show params
     #print(' '.join(params[1:])) #debug
     addline(self.server.network.serverwindow, ' '.join(params[1:]))
-    cw = mainwin.tab_widget.currentWidget()
-    if cw.network == self.server.network:
-      if command in ['RPL_WHOISUSER', 'RPL_WHOISSERVER', 'RPL_WHOISOPERATOR', 'RPL_WHOISIDLE', 'RPL_ENDOFWHOIS', 'RPL_WHOISCHANNELS', 'RPL_WHOWASUSER', 'RPL_ENDOFWHOWAS']:
-        #todo: why doesn't it show nick!ident@host?
-        #todo: add text like 'is on channels..', etc. might as well separate this into each respective command function
-        addline(cw, ' '.join(params[1:]))
-        
+      
   def nickChanged(self, newnick):
     self.nickname = newnick.decode()
     addline(self.server.network.serverwindow, "* Your nick has been changed to " + newnick)
@@ -1286,7 +1260,7 @@ if __name__ == '__main__':
   
   scripts = {}
   
-  config = yaml_to_namespaces(yaml.load(open(os.path.join(qttircpath, "qttirc.conf")), Loader=yaml.FullLoader)) #todo: allow to specify config and performs in command-line options
+  config = yaml_to_namespaces(yaml.load(open(os.path.join(qttircpath, "qttirc.conf")))) #todo: allow to specify config and performs in command-line options
 #  for line in open(os.path.join(qttircpath, "performonstartup.txt")): #should we make perform scripts more like scripts in the scripts directory to give them programmability?
 #    line = line.rstrip()
 #    docommand("serverwindow", serverwindow, line)
