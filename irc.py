@@ -2001,7 +2001,7 @@ class IRCClient(basic.LineReceiver):
         """
         Called when a user leaves a channel.
         """
-        #nick = prefix.split('!')[0]
+        nick = prefix.split('!')[0]
         channel = params[0]
         if nick == self.nickname:
             self.left(channel)
