@@ -149,96 +149,15 @@ class ServerInputQTextEdit(QTextEdit):
     self.setAcceptRichText(False)
   def keyPressEvent(self, event):
     if event.key() == Qt.Key_Return:
-      if colorcodewindow:
-        colorcodewindow[0].close()
-        colorcodewindow.pop()
       text = str(self.toPlainText())
       self.setPlainText("")
       if text.lstrip().startswith("/"):
         docommand("serverwindow", self.serverwindow, text)
       else:
         addline(self.serverwindow, "* Nothing performed. This is not a channel or private-message window")
-    elif event.key() == 75 and (event.modifiers() & Qt.ControlModifier):
-      cursor = self.textCursor()
-      cursor.insertText(b"\x03".decode("utf-8") )
-      cursor.movePosition(QTextCursor.NextCharacter, 1)
-      colorwidget = QDialog(self.serverwindow)
-      colorwidget.setWindowTitle("Colors")
-      colorgrid = QGridLayout()
-      i = 0
-      labelfont = QFont("Ariel", 10)
-      for y in range(2):
-        for x in range(8):
-          colorlabel = QLabel()
-          #colorlabel.setFixedWidth(QFontMetrics(colorlabel.font()).height())
-          colorlabel.setFont(labelfont)
-          #ColorLabel(QColor(*irccolors[y*8+x]), QColor(0, 0, 0))
-          colorlabel.setAutoFillBackground(True)
-          colorlabel.setAlignment(Qt.AlignCenter)
-          colorlabel.mousePressEvent = partial(self.clickedlabel, str(i))
-          #pal = colorlabel.palette()
-          #pal.setColor(QPalette.Window, QColor(*irccolors[y*8+x]))
-          #colorlabel.setPalette(pal)
-          bgcolor = irccolors[i]
-          #fgcolor = "white" if sum(bgcolor) < 384 else "black"
-          fgcolor = "black" if perceivedbrightness(*bgcolor) >= 50 else "white"
-          colorlabel.setStyleSheet(f"QLabel {{ background-color : rgb{bgcolor}; color : {fgcolor} }}")
-          colorlabel.setText(str(i))
-          #colorlabels[x, y] = colorlabel
-          colorgrid.addWidget(colorlabel, y, x, 1, 1)
-          i += 1
-          
-      for y in range(7):
-        for x in range(12):
-          if i < 99:
-            colorlabel = QLabel()
-            #colorlabel.setFixedWidth(QFontMetrics(colorlabel.font()).height())
-            colorlabel.setFont(labelfont)
-            #ColorLabel(QColor(*irccolors[y*8+x]), QColor(0, 0, 0))
-            colorlabel.setAutoFillBackground(True)
-            colorlabel.setAlignment(Qt.AlignCenter)
-            colorlabel.mousePressEvent = partial(self.clickedlabel, str(i))
-            #pal = colorlabel.palette()
-            #pal.setColor(QPalette.Window, QColor(*irccolors[y*8+x]))
-            #colorlabel.setPalette(pal)
-            bgcolor = irccolors[i]
-            #fgcolor = "white" if sum(bgcolor) < 384 else "black" #todo: do this better. maybe use a color distance algorithm to measure the distances to white and black?
-            fgcolor = "black" if perceivedbrightness(*bgcolor) >= 50 else "white"
-            colorlabel.setStyleSheet(f"QLabel {{ background-color : rgb{bgcolor}; color : {fgcolor} }}")
-            colorlabel.setText(str(i))
-            #colorlabels[x, y] = colorlabel
-            colorgrid.addWidget(colorlabel, y+2, x, 1, 1)    
-          i += 1 
-      colorwidget.setLayout(colorgrid)
-      colorwidget.raise_()
-      colorwidget.show()
-      #pos = self.textCursor().position()
-      size = colorwidget.frameSize()
-      w, h = size.width(), size.height()
-      #pos = self.mapToParent(self.cursorRect().topLeft())
-      #posx = max(pos.x()- w/2, 0)
-      #pos2 = self.mapToParent(self.frameRect().topLeft())
-      #posy = pos2.y() - h
-      #posy = self.y() - h
-      #colorwidget.move(posx, posy) #doesn't put it in the right place, in either x or y. don't know why. x is correct when show() is called before frameSize(), and y is still incorrect but at least usable.
-      colorwidget.move(max(self.mapToParent(self.cursorRect().topLeft()).x() - w/2, 0),  self.y() - h) 
-      #colorwidget.move(self, textCursor().window.height()
-      
-      colorcodewindow.append(colorwidget)
-      #mainwin.tab_widget.currentWidget().editwindow.setFocus()
-      #self.timer = QTimer()
-      #self.timer.singleShot(1500, self.setFocus)
-      #print("here")
-      self.setFocus()
-      self.activateWindow()
-    else:    
+        
+    else:
       QTextEdit.keyPressEvent(self, event)
-  def clickedlabel(self, stri, event):
-    cursor = self.textCursor()
-    cursor.insertText(stri)
-    cursor.movePosition(QTextCursor.NextCharacter, len(stri))
-    self.activateWindow()
-    self.setFocus()    
 
 def vlinear(v):
   if v <= .04045:
@@ -273,7 +192,7 @@ class ChannelInputQTextEdit(QTextEdit):
   #   posx = max(pos.x()- w/2, 0)
   #   pos2 = self.mapToParent(self.frameRect().topLeft())
   #   posy = pos2.y() - h
-  #   colorwidget.move(posx, posy) #
+    colorwidget.move(posx, posy) #
   def __init__(self, channel):
     QTextEdit.__init__(self)
     self.channel = channel
@@ -290,9 +209,6 @@ class ChannelInputQTextEdit(QTextEdit):
       colorcodewindow[0].close()
       colorcodewindow.pop()
     if event.key() == Qt.Key_Return and not (event.modifiers() & Qt.ShiftModifier):
-      if colorcodewindow:
-        colorcodewindow[0].close()
-        colorcodewindow.pop()
       #text = str(self.toPlainText()) #doesn't work with unicode input
       #text = unicode(self.toPlainText()) #this stopped working 
       text = self.toPlainText()#.encode(encoding='UTF-8')
@@ -653,9 +569,6 @@ class MessageInputQTextEdit(QTextEdit):
 
   def keyPressEvent(self, event):
     if event.key() == Qt.Key_Return and not (event.modifiers() & Qt.ShiftModifier): #should that be & or and?
-      if colorcodewindow:
-        colorcodewindow[0].close()
-        colorcodewindow.pop()
       text = str(self.toPlainText())
       self.setPlainText("")
       for textline in text.split(r"\n"):
@@ -667,88 +580,9 @@ class MessageInputQTextEdit(QTextEdit):
             addmsg(self.messagewindow.textwindow, self.messagewindow.network.server.serverconnection.nickname, textline)
           else:
             addline(self.messagewindow, "* You are not currently connected to a server")
-    elif event.key() == 75 and (event.modifiers() & Qt.ControlModifier):
-      cursor = self.textCursor()
-      cursor.insertText(b"\x03".decode("utf-8") )
-      cursor.movePosition(QTextCursor.NextCharacter, 1)
-      colorwidget = QDialog(self.messagewindow)
-      colorwidget.setWindowTitle("Colors")
-      colorgrid = QGridLayout()
-      i = 0
-      labelfont = QFont("Ariel", 10)
-      for y in range(2):
-        for x in range(8):
-          colorlabel = QLabel()
-          #colorlabel.setFixedWidth(QFontMetrics(colorlabel.font()).height())
-          colorlabel.setFont(labelfont)
-          #ColorLabel(QColor(*irccolors[y*8+x]), QColor(0, 0, 0))
-          colorlabel.setAutoFillBackground(True)
-          colorlabel.setAlignment(Qt.AlignCenter)
-          colorlabel.mousePressEvent = partial(self.clickedlabel, str(i))
-          #pal = colorlabel.palette()
-          #pal.setColor(QPalette.Window, QColor(*irccolors[y*8+x]))
-          #colorlabel.setPalette(pal)
-          bgcolor = irccolors[i]
-          #fgcolor = "white" if sum(bgcolor) < 384 else "black"
-          fgcolor = "black" if perceivedbrightness(*bgcolor) >= 50 else "white"
-          colorlabel.setStyleSheet(f"QLabel {{ background-color : rgb{bgcolor}; color : {fgcolor} }}")
-          colorlabel.setText(str(i))
-          #colorlabels[x, y] = colorlabel
-          colorgrid.addWidget(colorlabel, y, x, 1, 1)
-          i += 1
-          
-      for y in range(7):
-        for x in range(12):
-          if i < 99:
-            colorlabel = QLabel()
-            #colorlabel.setFixedWidth(QFontMetrics(colorlabel.font()).height())
-            colorlabel.setFont(labelfont)
-            #ColorLabel(QColor(*irccolors[y*8+x]), QColor(0, 0, 0))
-            colorlabel.setAutoFillBackground(True)
-            colorlabel.setAlignment(Qt.AlignCenter)
-            colorlabel.mousePressEvent = partial(self.clickedlabel, str(i))
-            #pal = colorlabel.palette()
-            #pal.setColor(QPalette.Window, QColor(*irccolors[y*8+x]))
-            #colorlabel.setPalette(pal)
-            bgcolor = irccolors[i]
-            #fgcolor = "white" if sum(bgcolor) < 384 else "black" #todo: do this better. maybe use a color distance algorithm to measure the distances to white and black?
-            fgcolor = "black" if perceivedbrightness(*bgcolor) >= 50 else "white"
-            colorlabel.setStyleSheet(f"QLabel {{ background-color : rgb{bgcolor}; color : {fgcolor} }}")
-            colorlabel.setText(str(i))
-            #colorlabels[x, y] = colorlabel
-            colorgrid.addWidget(colorlabel, y+2, x, 1, 1)    
-          i += 1 
-      colorwidget.setLayout(colorgrid)
-      colorwidget.raise_()
-      colorwidget.show()
-      #pos = self.textCursor().position()
-      size = colorwidget.frameSize()
-      w, h = size.width(), size.height()
-      #pos = self.mapToParent(self.cursorRect().topLeft())
-      #posx = max(pos.x()- w/2, 0)
-      #pos2 = self.mapToParent(self.frameRect().topLeft())
-      #posy = pos2.y() - h
-      #posy = self.y() - h
-      #colorwidget.move(posx, posy) #doesn't put it in the right place, in either x or y. don't know why. x is correct when show() is called before frameSize(), and y is still incorrect but at least usable.
-      colorwidget.move(max(self.mapToParent(self.cursorRect().topLeft()).x() - w/2, 0),  self.y() - h) 
-      #colorwidget.move(self, textCursor().window.height()
-      
-      colorcodewindow.append(colorwidget)
-      #mainwin.tab_widget.currentWidget().editwindow.setFocus()
-      #self.timer = QTimer()
-      #self.timer.singleShot(1500, self.setFocus)
-      #print("here")
-      self.setFocus()
-      self.activateWindow()
-    else:    
+    else:
       QTextEdit.keyPressEvent(self, event)
-  def clickedlabel(self, stri, event):
-    cursor = self.textCursor()
-    cursor.insertText(stri)
-    cursor.movePosition(QTextCursor.NextCharacter, len(stri))
-    self.activateWindow()
-    self.setFocus()
-      
+
 def addmsg(textedit, nick, message):
   if config.show_timestamp:
     obj_now = datetime.now()

@@ -2116,7 +2116,8 @@ class IRCClient(basic.LineReceiver):
         #kicker = prefix.split('!')[0]
         channel = params[0]
         kicked = params[1]
-        message = params[-1]
+        print(f"{params=}") #debug
+        message = params[-1] #if len(params) >=2 else None #modification by inhahe
         if kicked.lower() == self.nickname.lower():
             # Yikes!
             self.kickedFrom(channel, prefix, message)
