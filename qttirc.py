@@ -96,6 +96,7 @@
 #display "you're not channel operator" and "they aren't on that channel" (kick response) in the channel window
 #add nickcontextmenu to message and server windows
 #add nick anchors in things like ping notices
+#have only one class for input*qtextedit's
 
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
@@ -148,7 +149,9 @@ class ServerInputQTextEdit(QTextEdit):
     self.serverwindow = serverwindow
     self.setAcceptRichText(False)
   def keyPressEvent(self, event):
-    if event.key() == Qt.Key_Return:
+    key = event.key()
+    modifiers = event.modifiers()
+    if key == Qt.Key_Return:
       if colorcodewindow:
         colorcodewindow[0].close()
         colorcodewindow.pop()
@@ -158,7 +161,7 @@ class ServerInputQTextEdit(QTextEdit):
         docommand("serverwindow", self.serverwindow, text)
       else:
         addline(self.serverwindow, "* Nothing performed. This is not a channel or private-message window")
-    elif event.key() == 75 and (event.modifiers() & Qt.ControlModifier):
+    elif key == 75 and (modifiers & Qt.ControlModifier):
       cursor = self.textCursor()
       cursor.insertText(b"\x03".decode("utf-8") )
       cursor.movePosition(QTextCursor.NextCharacter, 1)
@@ -231,6 +234,26 @@ class ServerInputQTextEdit(QTextEdit):
       #print("here")
       self.setFocus()
       self.activateWindow()
+    elif key == ord("B") and (modifiers & Qt.ControlModifier):
+      cursor = self.textCursor()
+      cursor.insertText(b"\x02".decode("utf-8"))
+      cursor.movePosition(QTextCursor.NextCharacter, 1)
+    elif key == ord("U") and (modifiers & Qt.ControlModifier):
+      cursor = self.textCursor()
+      cursor.insertText(b"\x1f".decode("utf-8"))
+      cursor.movePosition(QTextCursor.NextCharacter, 1)
+    elif key == ord("R") and (modifiers & Qt.ControlModifier):
+      cursor = self.textCursor()
+      cursor.insertText(b"\x16".decode("utf-8"))
+      cursor.movePosition(QTextCursor.NextCharacter, 1)
+    elif key == ord("I") and (modifiers & Qt.ControlModifier):
+      cursor = self.textCursor()
+      cursor.insertText(b"\x1d".decode("utf-8"))
+      cursor.movePosition(QTextCursor.NextCharacter, 1)
+    elif key == ord("O") and (modifiers & Qt.ControlModifier):
+      cursor = self.textCursor()
+      cursor.insertText(b"\x0f".decode("utf-8"))
+      cursor.movePosition(QTextCursor.NextCharacter, 1)     
     else:    
       QTextEdit.keyPressEvent(self, event)
   def clickedlabel(self, stri, event):
@@ -286,10 +309,11 @@ class ChannelInputQTextEdit(QTextEdit):
   #    colorcodewindow.pop()
   def keyPressEvent(self, event):
     key = event.key()
+    modifiers = event.modifiers()
     if colorcodewindow and not (48 <= key <= 57 or key==44):
       colorcodewindow[0].close()
       colorcodewindow.pop()
-    if event.key() == Qt.Key_Return and not (event.modifiers() & Qt.ShiftModifier):
+    if key == Qt.Key_Return and not (event.modifiers() & Qt.ShiftModifier):
       if colorcodewindow:
         colorcodewindow[0].close()
         colorcodewindow.pop()
@@ -310,7 +334,7 @@ class ChannelInputQTextEdit(QTextEdit):
             addmsg(self.channel.channelwindow.textwindow, self.channel.network.server.serverconnection.nickname, msg)
         else:
           addline(channel.channelwindow, "* You are not currently connected to a server") #does mIRC log responses like this that would be out of context without showing the input?
-    elif event.key() == 75 and (event.modifiers() & Qt.ControlModifier):
+    elif key == 75 and (modifiers & Qt.ControlModifier):
       cursor = self.textCursor()
       cursor.insertText(b"\x03".decode("utf-8") )
       cursor.movePosition(QTextCursor.NextCharacter, 1)
@@ -383,6 +407,26 @@ class ChannelInputQTextEdit(QTextEdit):
       #print("here")
       self.setFocus()
       self.activateWindow()
+    elif key == ord("B") and (modifiers & Qt.ControlModifier):
+      cursor = self.textCursor()
+      cursor.insertText(b"\x02".decode("utf-8"))
+      cursor.movePosition(QTextCursor.NextCharacter, 1)
+    elif key == ord("U") and (modifiers & Qt.ControlModifier):
+      cursor = self.textCursor()
+      cursor.insertText(b"\x1f".decode("utf-8"))
+      cursor.movePosition(QTextCursor.NextCharacter, 1)
+    elif key == ord("R") and (modifiers & Qt.ControlModifier):
+      cursor = self.textCursor()
+      cursor.insertText(b"\x16".decode("utf-8"))
+      cursor.movePosition(QTextCursor.NextCharacter, 1)
+    elif key == ord("I") and (modifiers & Qt.ControlModifier):
+      cursor = self.textCursor()
+      cursor.insertText(b"\x1d".decode("utf-8"))
+      cursor.movePosition(QTextCursor.NextCharacter, 1)
+    elif key == ord("O") and (modifiers & Qt.ControlModifier):
+      cursor = self.textCursor()
+      cursor.insertText(b"\x0f".decode("utf-8"))
+      cursor.movePosition(QTextCursor.NextCharacter, 1)     
     else:    
       QTextEdit.keyPressEvent(self, event)
   def clickedlabel(self, stri, event):
@@ -652,7 +696,9 @@ class MessageInputQTextEdit(QTextEdit):
     self.setAcceptRichText(False)
 
   def keyPressEvent(self, event):
-    if event.key() == Qt.Key_Return and not (event.modifiers() & Qt.ShiftModifier): #should that be & or and?
+    key = event.key()
+    modifiers = event.modifiers()
+    if key == Qt.Key_Return and not (modifiers() & Qt.ShiftModifier): #should that be & or and?
       if colorcodewindow:
         colorcodewindow[0].close()
         colorcodewindow.pop()
@@ -667,7 +713,7 @@ class MessageInputQTextEdit(QTextEdit):
             addmsg(self.messagewindow.textwindow, self.messagewindow.network.server.serverconnection.nickname, textline)
           else:
             addline(self.messagewindow, "* You are not currently connected to a server")
-    elif event.key() == 75 and (event.modifiers() & Qt.ControlModifier):
+    elif key == 75 and (modifiers & Qt.ControlModifier):
       cursor = self.textCursor()
       cursor.insertText(b"\x03".decode("utf-8") )
       cursor.movePosition(QTextCursor.NextCharacter, 1)
@@ -740,6 +786,26 @@ class MessageInputQTextEdit(QTextEdit):
       #print("here")
       self.setFocus()
       self.activateWindow()
+    elif key == ord("B") and (modifiers & Qt.ControlModifier):
+      cursor = self.textCursor()
+      cursor.insertText(b"\x02".decode("utf-8"))
+      cursor.movePosition(QTextCursor.NextCharacter, 1)
+    elif key == ord("U") and (modifiers & Qt.ControlModifier):
+      cursor = self.textCursor()
+      cursor.insertText(b"\x1f".decode("utf-8"))
+      cursor.movePosition(QTextCursor.NextCharacter, 1)
+    elif key == ord("R") and (modifiers & Qt.ControlModifier):
+      cursor = self.textCursor()
+      cursor.insertText(b"\x16".decode("utf-8"))
+      cursor.movePosition(QTextCursor.NextCharacter, 1)
+    elif key == ord("I") and (modifiers & Qt.ControlModifier):
+      cursor = self.textCursor()
+      cursor.insertText(b"\x1d".decode("utf-8"))
+      cursor.movePosition(QTextCursor.NextCharacter, 1)
+    elif key == ord("O") and (modifiers & Qt.ControlModifier):
+      cursor = self.textCursor()
+      cursor.insertText(b"\x0f".decode("utf-8"))
+      cursor.movePosition(QTextCursor.NextCharacter, 1)     
     else:    
       QTextEdit.keyPressEvent(self, event)
   def clickedlabel(self, stri, event):
@@ -1020,7 +1086,7 @@ def splithostmask(hostmask):
     ident, host = "", ""
   return nick, ident, host
 
-colorre = re.compile(b"(?:\x03(?:\\d\\d?(?:,\\d\\d?)?)?)|\x02|\x1f|\x16|\x1d")
+colorre = re.compile(b"(?:\x03(?:\\d\\d?(?:,\\d\\d?)?)?)|\x02|\x1f|\x16|\x1d|\x0f")
 #irccolors = ["#FFFFFF",    "#000000", "#00007F",   "#009300",    "#FF0000",   "#7F0000",  "#9C009C",      "#FC7F00",
 #              "#FFFF00",    "#00FC00",   "#009393",   "#00FFFF",     "#0000FC", "#FF00FF",     "#7F7F7F",      "#D2D2D2"]
 irccolors = ((255,255,255), (0, 0, 0), (0, 0, 127), (0, 147, 00), (255, 0, 0), (127, 0, 0), (156, 0, 156), (252, 127, 0),
@@ -1069,6 +1135,15 @@ def colorify(widget, msg): #should behave just like mIRC.
         else:
           widget.setTextColor(curcolorf)
           widget.setTextBackgroundColor(curcolorb)
+      elif code == b"\x0f":
+        widget.setTextColor(origcolorf)
+        widget.setTextBackgroundColor(origcolorb)
+        widget.setFontWeight(QFont.Normal)
+        widget.setFontUnderline(False)
+        underlite = False
+        bold = False
+        curcolorf = origcolorf
+        curcolorb = origcolorb
       elif code[0] == 3: #weird python 3 quirk, b"\x03"[0] == 3
         if code == b"\x03": 
           curcolorf = origcolorf
