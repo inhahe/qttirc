@@ -1,9 +1,3 @@
-#connection times out after connect, no idea why
-#remember last nick like mIRC does
-#nothing happens after automatically changing nick when it's taken (on Libera)
-#don't hammer the server with repeated aborted connection attempts when there's an exception thaht occurs every time
-#implement /whois
-#support bold, italics, colors, etc. in status window messages sent from server
 #support server-specific username and password in config file
 #/join doesn't work from a channel window for some reason
 #qttirc stands for Qt+Twisted IRC
@@ -104,7 +98,6 @@
 #display "you're not channel operator" and "they aren't on that channel" (kick response) in the channel window
 #add nickcontextmenu to message and server windows
 #add nick anchors in things like ping notices
-#option to have a tab that shows all notices
 #have only one class for input*qtextedit's
 
 from PyQt5.QtCore import *
@@ -648,7 +641,8 @@ def docommand(windowtype, window, text): #todo: test from server, channel, and p
                                                                                                    #todo: warn if nicks not specified in config file instead of erroring out
     server = ClientFactory(nickname=nick.encode("ascii").decode(), username=network_config.username.encode("ascii").decode() if network_config and network_config.username else None,
                            password=network_config.password.encode("ascii").decode() if network_config and network_config.password else None, realname=realname.encode("ascii").decode() if realname else None,
-                           sasl_enabled=network_config.sasl,
+                           sasl_enabled=network_config.sasl_enabled if network_config and network_config.sasl_enabled else None,
+                           sasl_username=network_config.sasl_username if network_config and network_config.sasl_username else None,
                            sasl_password = network_config.sasl_password if network_config and network_config.sasl_password else None, network=network, network_config=network_config)
     
     #print(f"server.nickname: {server.nickname}, server.username: {server.username}, server.password: {server.password}, server.realname: {server.realname}, server.network: {server.network}, server.network_config: {server.network_config}")  #debug
@@ -1360,9 +1354,8 @@ class ServerConnection(irc.IRCClient):
     mainwin.tab_widget.setTabText(mainwin.tab_widget.indexOf(self.server.network.serverwindow), "%s - %s" % (network_name, self.nickname)) #might be better to store the index
     #print("here at join channels")
     #print(self.server.network_config.channels)
-    if self.server.network_config.channels:
-      for channel in self.server.network_config.channels:
-        self.join(channel)
+    for channel in self.server.network_config.channels:
+      self.join(channel)
      
   def IRCcommand(self, command, prefix, params): #relies on a change to irc.py
     #print [command, prefix, params]
@@ -1718,7 +1711,7 @@ class ServerConnection(irc.IRCClient):
       addline(self.network.serverwindow.textwindow, f"[{user} ping reply]: {secs}secs")
 
 class ClientFactory(protocol.ClientFactory):
-  def __init__(self, nickname="qttirc", password=None, username="qttirc", realname=None, sasl_enabled = False, sasl_password = None, network=None, network_config=None):
+  def __init__(self, nickname="qttirc", password=None, username="qttirc", realname=None, sasl_enabled = False, sasl_username = None, sasl_password = None, network=None, network_config=None):
     self.network = network
     #print("ClientFactory")
     #print(f"self.network_config=")
@@ -1728,6 +1721,7 @@ class ClientFactory(protocol.ClientFactory):
     self.username = username
     self.password = password
     self.sasl_enabled = sasl_enabled
+    self.sasl_username = sasl_username
     self.sasl_password = sasl_password
     self.realname = realname or "qttirc"
     #protocol.ReconnectingClientFactory.initialDelay = 10 #should i leave this at 1?
@@ -1745,8 +1739,6 @@ class ClientFactory(protocol.ClientFactory):
     p.server = self
     p.nickname = self.nickname
     p.username = self.username
-    p.sasl_enabled = self.sasl_enabled
-    p.sasl_password = self.sasl_password
     #self.resetDelay()
     return p
 

@@ -39,9 +39,8 @@ import operator
 import string, socket
 import textwrap
 import shlex
-from functools import reduce, partial
+from functools import reduce
 from os import path
-from base64 import b64encode, b64decode
 
 from twisted.internet import reactor, protocol, task
 from twisted.persisted import styles
@@ -1199,18 +1198,7 @@ class IRCClient(basic.LineReceiver):
     @ivar heartbeatInterval: Interval, in seconds, to send I{PING} messages to
         the server as a form of keepalive, defaults to 120 seconds. Use L{None}
         to disable the heartbeat.
-        
-    @type sasl_enabled: C{bool}
-    @ivar sasl_enabled: SASL enabled
-    
-    @type sasl_password: C{str}
-    ivar  sasl_password: SASL password. Typically "username:password"
-    
     """
-    sasl_enabled = False
-    sasl_type = "PLAIN"
-    sasl_password = None
-    
     hostname = None
     motd = None
     nickname = 'irc'
@@ -1249,22 +1237,9 @@ class IRCClient(basic.LineReceiver):
 
     _heartbeat = None
     heartbeatInterval = 120
-    
-    _onCommandDict = {}
 
-    def _onCommand(self, command, delete_after_run, func, *args, **kwargs): #modification by inhahe
-      class O: pass
-      o = O()
-      o.func = partial(func, *args, **kwargs)
-      o.delete_after_run = delete_after_run
-      if command in self._onCommandDict:
-        self._onCommandDict[command].append(o)
-      else:
-        self._onCommandDict[command] = [o]
 
     def _reallySendLine(self, line):
-        print("<" + str(line)) #debug
-        print(f"{line=}")#debug
         quoteLine = lowQuote(line)
         if isinstance(quoteLine, unicode):
             quoteLine = quoteLine.encode("utf-8")
@@ -1849,32 +1824,6 @@ class IRCClient(basic.LineReceiver):
         @type servername: C{str}
         @param servername: If specified, the servername to logon as.
         """
-        
-        def _sasl_phase_1(prefix, params):
-          print(f"{params=}")#debug
-          if params[1:3] == ["ACK", "sasl"]:
-            self.sendLine("AUTHENTICATE PLAIN")
-            def _sasl_phase_2(prefix, params):
-              print(f"{params=}")#debug
-              if params[0] == "+":
-                if ":" in self.sasl_password:
-                  leftside, rightside = self.sasl_password.split(":", 1)
-                  self.sendLine("AUTHENTICATE " + str(b64encode(bytes(leftside+"\0"+leftside+"\0"+rightside, encoding='utf8')), 'utf-8'))
-                else:
-                  self.sendLine("AUTHENTICATE " + str(b64encode(bytes(self.nickname+"\0"+self.nickname+"\0"+self.sasl_password, encoding='utf8')), 'utf-8'))
-            self._onCommand("AUTHENTICATE", delete_after_run=True, func=_sasl_phase_2)
-            
-            #self.sendLine(b64encode(self.sasl_username + "\0" + self.sasl_username + "\0" + self.sasl_password))
-            self.sendLine(str(b64encode(bytes(self.sasl_password, encoding='utf8'))))
-            #todo: split the base64 into 400-byte chunks, each with an "AUTHENTICATE" command, and if the last chunk is exactly 400 bytes then send another "AUTHENICATE +"
-                        
-        print(f"{self.sasl_enabled=}")
-        if self.sasl_enabled:
-          if self.sasl_type == "PLAIN":
-
-            self._onCommand("CAP", delete_after_run=True, func=_sasl_phase_1) #todo: need to be able to delete_after_run conditionally inside the function based on prefix/params
-            self.sendLine("CAP REQ :sasl")
-                 
         if self.password is not None:
             self.sendLine("PASS %s" % self.password)
         self.setNick(nickname)
@@ -2266,9 +2215,6 @@ class IRCClient(basic.LineReceiver):
         self.luserMe(params[1])
 
     def irc_unknown(self, prefix, command, params):
-        pass
-      
-    def irc_RPL_SASLSUCCESS(self, prefix, command, params):
         pass
 
     ### Receiving a CTCP query from another party
@@ -2701,7 +2647,7 @@ class IRCClient(basic.LineReceiver):
         self.supported = ServerSupportedFeatures()
         self._queue = []
         if self.performLogin:
-            self.register(self.nickname, self.sasl_enabled, self.sasl_password)
+            self.register(self.nickname)
 
     def dataReceived(self, data):
         if isinstance(data, unicode):
@@ -2711,7 +2657,6 @@ class IRCClient(basic.LineReceiver):
 
 
     def lineReceived(self, line):
-        print(">" + str(line))#debug
         if bytes != str and isinstance(line, bytes):
             # decode bytes from transport to unicode
             line = line.decode("utf-8")
@@ -2777,6 +2722,7 @@ class IRCClient(basic.LineReceiver):
         """
         
         self.IRCcommand(command, prefix, params) #modification by inhahe 
+
         
         method = getattr(self, "irc_%s" % command, None)
         
@@ -2787,15 +2733,8 @@ class IRCClient(basic.LineReceiver):
                 self.irc_unknown(prefix, command, params)
         except:
             log.deferr()
-        
-        print(f"{command=}, {self._onCommandDict=}")#debug    
-        if command in self._onCommandDict:
-          l = self._onCommandDict[command]
-          for i, t in enumerate(l):
-            t.func(prefix, params)
-          l = [t for t in l if not t.delete_after_run]
-          self._onCommandDict[command] = l
-        
+
+
     def __getstate__(self):
         dct = self.__dict__.copy()
         dct['dcc_sessions'] = None
@@ -4160,15 +4099,6 @@ symbolic_to_numeric = {
     "ERR_NOSERVICEHOST": '492',
     "ERR_UMODEUNKNOWNFLAG": '501',
     "ERR_USERSDONTMATCH": '502',
-    "RPL_LOGGEDIN": '900',
-    "RPL_LOGGEDOUT": '901',
-    "RPL_NICKLOCKED": '902',
-    "RPL_SASLSUCCESS": '903',
-    "ERR_SASLFAIL": '904',
-    "ERR_SASLTOOLONG": '905',
-    "ERR_SASLABORTED": '906',
-    "ERR_SASLALREADY": '907',
-    "RPL_SASLMECHS": '908'
 }
 
 numeric_to_symbolic = {}
