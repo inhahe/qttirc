@@ -1,0 +1,2 @@
+This program copyright 2024 Richard A. Nichols III (Inhahe) - http://inhahe.com
+except for irc.py, irc2.py and irc3.py which are copyright Twisted Matrix Laboratories
