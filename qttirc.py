@@ -1,6 +1,7 @@
 #connection times out after connect, no idea why
 #remember last nick like mIRC does
-#nothing happens after automatically changing nick when it's taken (on Libera)
+#nothing happens after automatically changing nick when it's taken (on Libera)?
+#support sasl EXTERNAL
 #don't hammer the server with repeated aborted connection attempts when there's an exception thaht occurs every time
 #implement /whois
 #support bold, italics, colors, etc. in status window messages sent from server

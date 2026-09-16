@@ -1859,13 +1859,11 @@ class IRCClient(basic.LineReceiver):
               if params[0] == "+":
                 if ":" in self.sasl_password:
                   leftside, rightside = self.sasl_password.split(":", 1)
-                  self.sendLine("AUTHENTICATE " + str(b64encode(bytes(leftside+"\0"+leftside+"\0"+rightside, encoding='utf8')), 'utf-8'))
+                  self.sendLine("AUTHENTICATE " + str(b64encode(bytes(leftside+"\0"+leftside+"\0"+rightside, encoding='utf8')), 'utf-8'))  
+                  #ideally if there's no : in the password, leftside would be server_config.nicks[0] if server_config.nicks else self.nickname, but that would ruin the separation between the protocol implementation and the main client implementation.
                 else:
                   self.sendLine("AUTHENTICATE " + str(b64encode(bytes(self.nickname+"\0"+self.nickname+"\0"+self.sasl_password, encoding='utf8')), 'utf-8'))
             self._onCommand("AUTHENTICATE", delete_after_run=True, func=_sasl_phase_2)
-            
-            #self.sendLine(b64encode(self.sasl_username + "\0" + self.sasl_username + "\0" + self.sasl_password))
-            self.sendLine(str(b64encode(bytes(self.sasl_password, encoding='utf8'))))
             #todo: split the base64 into 400-byte chunks, each with an "AUTHENTICATE" command, and if the last chunk is exactly 400 bytes then send another "AUTHENICATE +"
                         
         print(f"{self.sasl_enabled=}")
